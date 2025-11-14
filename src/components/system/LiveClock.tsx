@@ -8,6 +8,7 @@ export function LiveClock() {
   const [time, setTime] = useState<Date | null>(null);
 
   useEffect(() => {
+    // This will only run on the client, after initial hydration
     setTime(new Date());
     const timer = setInterval(() => {
       setTime(new Date());
@@ -18,8 +19,12 @@ export function LiveClock() {
     };
   }, []);
 
+  if (!time) {
+    return <div className="text-foreground font-medium text-sm w-24 text-center"></div>;
+  }
+
   return (
-    <div className="text-white font-medium text-sm w-24 text-center">
+    <div className="text-foreground font-medium text-sm w-24 text-center">
       {time ? format(time, 'h:mm:ss a') : ''}
     </div>
   );

@@ -31,10 +31,10 @@ export function Taskbar() {
               <Button
                 key={win.id}
                 variant="ghost"
-                className={`h-10 px-3 flex items-center gap-2 transition-colors duration-200 text-white ${
+                className={`h-10 px-3 flex items-center gap-2 transition-colors duration-200 text-foreground ${
                   win.isFocused && !win.isMinimized
                     ? 'bg-primary/30'
-                    : 'hover:bg-white/20'
+                    : 'hover:bg-accent/50'
                 }`}
                 onClick={() => handleTaskbarButtonClick(win.id)}
               >
@@ -49,10 +49,10 @@ export function Taskbar() {
       <div className="flex items-center gap-4">
         <LiveClock />
         <div className="h-8 w-px bg-white/20" />
-        <a href="https://github.com/aathisivan" target="_blank" rel="noopener noreferrer" className="text-white/80 hover:text-primary transition-colors">
+        <a href="https://github.com/aathisivan" target="_blank" rel="noopener noreferrer" className="text-foreground/80 hover:text-primary transition-colors">
           <Github className="w-6 h-6" />
         </a>
-        <a href="https://www.linkedin.com/in/aathisivan" target="_blank" rel="noopener noreferrer" className="text-white/80 hover:text-primary transition-colors">
+        <a href="https://www.linkedin.com/in/aathisivan" target="_blank" rel="noopener noreferrer" className="text-foreground/80 hover:text-primary transition-colors">
           <Linkedin className="w-6 h-6" />
         </a>
       </div>
