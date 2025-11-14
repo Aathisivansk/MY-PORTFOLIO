@@ -5,6 +5,7 @@ import { useDesktop } from "@/contexts/DesktopContext";
 import { ProjectShowcase } from "./ProjectShowcase";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { Project } from "@/lib/types";
 
 interface ProjectListProps {
   categoryId: string;
@@ -15,12 +16,12 @@ export function ProjectList({ categoryId, categoryName }: ProjectListProps) {
   const { openWindow } = useDesktop();
   const projects = PROJECTS.filter(p => p.categoryId === categoryId);
 
-  const handleProjectClick = (project: (typeof PROJECTS)[0]) => {
+  const handleProjectClick = (project: Project) => {
     openWindow({
-      id: project.id,
+      id: `project-${project.id}`,
       title: project.title,
       content: <ProjectShowcase project={project} />,
-      type: 'CATEGORY', // Not a great fit, but works for now. Better to have a 'PROJECT' type.
+      type: 'PROJECT',
       size: { width: 800, height: 600 }
     });
   };

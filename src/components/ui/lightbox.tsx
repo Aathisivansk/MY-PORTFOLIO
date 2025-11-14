@@ -52,18 +52,21 @@ export function Lightbox({ imageUrl, onClose }: LightboxProps) {
   };
   
   useEffect(() => {
-    document.addEventListener('mousemove', onMouseMove);
+    const onGlobalMouseMove = (e: MouseEvent) => onMouseMove(e);
+    document.addEventListener('mousemove', onGlobalMouseMove);
     document.addEventListener('mouseup', onMouseUp);
+    
     return () => {
-      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mousemove', onGlobalMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
-        className="bg-black/80 border-none p-0 w-screen h-screen max-w-full flex items-center justify-center" 
+        className="bg-black/80 border-none p-0 w-screen h-screen max-w-full flex items-center justify-center data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0" 
         onWheel={handleWheel}
       >
         <div
@@ -71,14 +74,15 @@ export function Lightbox({ imageUrl, onClose }: LightboxProps) {
           className="relative w-full h-full cursor-grab"
           onMouseDown={onMouseDown}
         >
-          <div style={{ transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`, transition: 'transform 0.1s ease-out' }}>
+          <div style={{ transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`, transition: isDragging.current ? 'none' : 'transform 0.1s ease-out' }}>
             <Image
               src={imageUrl}
               alt="Lightbox image"
-              width={1200}
-              height={800}
-              className="max-w-full max-h-full object-contain"
+              width={1920}
+              height={1080}
+              className="max-w-screen-lg max-h-screen-lg object-contain"
               draggable="false"
+              priority
             />
           </div>
         </div>

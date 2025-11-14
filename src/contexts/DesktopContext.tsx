@@ -6,7 +6,7 @@ import { ProjectList } from '@/components/content/ProjectList';
 import { CATEGORIES } from '@/lib/data';
 import { BlogList } from '@/components/content/BlogList';
 import { ContactForm } from '@/components/content/ContactForm';
-import { FileText, Mail } from 'lucide-react';
+import { Code, FileText, Mail } from 'lucide-react';
 
 interface DesktopContextType {
   windows: WindowInstance[];
@@ -27,7 +27,7 @@ type OpenWindowArgs = {
   title: string;
   icon?: React.ElementType;
   content?: React.ReactNode;
-  type: 'CATEGORY' | 'BLOGS' | 'CONTACT';
+  type: 'CATEGORY' | 'BLOGS' | 'CONTACT' | 'PROJECT';
   size?: { width: number; height: number };
 };
 
@@ -62,6 +62,8 @@ export const DesktopProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
 
       let newContent: React.ReactNode;
+      let newIcon: React.ElementType | undefined = icon;
+
       switch (type) {
         case 'CATEGORY':
             const category = CATEGORIES.find(c => c.id === id);
@@ -69,9 +71,15 @@ export const DesktopProvider: React.FC<{ children: React.ReactNode }> = ({ child
             break;
         case 'BLOGS':
             newContent = <BlogList />;
+            newIcon = FileText;
             break;
         case 'CONTACT':
             newContent = <ContactForm />;
+            newIcon = Mail;
+            break;
+        case 'PROJECT':
+            newContent = content;
+            newIcon = Code;
             break;
         default:
             newContent = content || <div>Content for {title}</div>;
@@ -80,7 +88,7 @@ export const DesktopProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const newWindow: WindowInstance = {
         id,
         title,
-        icon,
+        icon: newIcon,
         position: getInitialPosition(),
         size: initialSize || { width: 700, height: 500 },
         minSize: { width: 350, height: 250 },

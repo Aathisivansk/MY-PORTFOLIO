@@ -21,6 +21,9 @@ export default function NewProjectPage() {
   const [myContribution, setMyContribution] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [techStack, setTechStack] = useState('');
+  const [demoPhotoUrl, setDemoPhotoUrl] = useState('');
+  const [demoVideoUrl, setDemoVideoUrl] = useState('');
+  const [flowchartUrl, setFlowchartUrl] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +34,9 @@ export default function NewProjectPage() {
       myContribution,
       categoryId,
       techStack: techStack.split(',').map(s => s.trim()),
+      demo_photo_url: demoPhotoUrl,
+      demo_video_url: demoVideoUrl,
+      flowchart_url: flowchartUrl,
     });
     toast({
       title: "Project Created",
@@ -58,7 +64,7 @@ export default function NewProjectPage() {
             </div>
              <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-                <Select onValueChange={setCategoryId} value={categoryId}>
+                <Select onValueChange={setCategoryId} value={categoryId} required>
                     <SelectTrigger id="category">
                         <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
@@ -80,6 +86,20 @@ export default function NewProjectPage() {
             <div className="space-y-2">
               <Label htmlFor="techStack">Tech Stack (comma-separated)</Label>
               <Input id="techStack" value={techStack} onChange={(e) => setTechStack(e.target.value)} placeholder="e.g., React, Next.js, Tailwind CSS" required />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <Label htmlFor="demoPhotoUrl">Demo Photo URL</Label>
+                    <Input id="demoPhotoUrl" value={demoPhotoUrl} onChange={(e) => setDemoPhotoUrl(e.target.value)} placeholder="https://example.com/image.jpg" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="flowchartUrl">Flowchart URL</Label>
+                    <Input id="flowchartUrl" value={flowchartUrl} onChange={(e) => setFlowchartUrl(e.target.value)} placeholder="https://example.com/flowchart.png" />
+                </div>
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="demoVideoUrl">Demo Video URL</Label>
+              <Input id="demoVideoUrl" value={demoVideoUrl} onChange={(e) => setDemoVideoUrl(e.target.value)} placeholder="https://example.com/video.mp4" />
             </div>
             <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
