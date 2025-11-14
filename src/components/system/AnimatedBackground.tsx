@@ -10,7 +10,7 @@ export function AnimatedBackground() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
-  
+
   useEffect(() => {
     if (!isMounted) return;
 
@@ -33,22 +33,24 @@ export function AnimatedBackground() {
   }
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden bg-background">
+    <div className="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden bg-[#0a0a2a]">
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-background via-blue-200/10 to-cyan-200/10 bg-[length:200%_200%] transition-all duration-1000 ease-out"
-        style={{
-            backgroundPosition: `${mousePosition.x}% ${mousePosition.y}%`
-        }}
-      />
-       <div 
-        className="absolute w-96 h-64 bg-cyan-300/40 rounded-full filter blur-3xl opacity-30 animate-pulse transition-all duration-1000 ease-in-out" 
+        className="absolute w-96 h-96 bg-cyan-400/50 rounded-full filter blur-3xl opacity-40 transition-all duration-1000 ease-out"
         style={{ 
             left: `${mousePosition.x - 25}%`,
             top: `${mousePosition.y - 20}%`,
-            transform: `rotate(${mousePosition.x / 2}deg)`
+            transform: `translate(-50%, -50%) rotate(${mousePosition.x}deg) scale(${1 + mousePosition.y / 200})`,
         }}
        />
-      <div className="absolute inset-0 bg-white/5 backdrop-blur-sm" />
+       <div 
+        className="absolute w-80 h-80 bg-purple-400/50 rounded-full filter blur-3xl opacity-30 transition-all duration-1000 ease-out delay-100"
+        style={{ 
+            left: `${100 - mousePosition.x - 25}%`,
+            top: `${100 - mousePosition.y - 20}%`,
+            transform: `translate(-50%, -50%) rotate(-${mousePosition.x}deg) scale(${1 + mousePosition.x / 200})`,
+        }}
+       />
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
     </div>
   );
 }
