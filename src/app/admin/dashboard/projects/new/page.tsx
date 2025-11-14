@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -12,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { CATEGORIES } from '@/lib/data';
 import { ArrowLeft } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -46,66 +48,68 @@ export default function NewProjectPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-       <Link href="/admin/dashboard/projects" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary mb-4">
+    <div className="flex flex-col h-full">
+       <Link href="/admin/dashboard/projects" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary mb-4 shrink-0">
             <ArrowLeft className="w-4 h-4" />
             Back to Projects
         </Link>
-      <Card>
+      <Card className="flex-1 flex flex-col">
         <CardHeader>
           <CardTitle>Create New Project</CardTitle>
           <CardDescription>Fill out the form below to add a new project to your portfolio.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="title">Project Title</Label>
-              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Interactive Data Dashboard" required />
-            </div>
-             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-                <Select onValueChange={setCategoryId} value={categoryId} required>
-                    <SelectTrigger id="category">
-                        <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {CATEGORIES.map(category => (
-                            <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Short Description</Label>
-              <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A brief summary of the project." required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="myContribution">My Contribution</Label>
-              <Textarea id="myContribution" value={myContribution} onChange={(e) => setMyContribution(e.target.value)} placeholder="Describe your role and contributions..." required rows={5} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="techStack">Tech Stack (comma-separated)</Label>
-              <Input id="techStack" value={techStack} onChange={(e) => setTechStack(e.target.value)} placeholder="e.g., React, Next.js, Tailwind CSS" required />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                    <Label htmlFor="demoPhotoUrl">Demo Photo URL</Label>
-                    <Input id="demoPhotoUrl" value={demoPhotoUrl} onChange={(e) => setDemoPhotoUrl(e.target.value)} placeholder="https://example.com/image.jpg" />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="flowchartUrl">Flowchart URL</Label>
-                    <Input id="flowchartUrl" value={flowchartUrl} onChange={(e) => setFlowchartUrl(e.target.value)} placeholder="https://example.com/flowchart.png" />
-                </div>
-            </div>
-             <div className="space-y-2">
-              <Label htmlFor="demoVideoUrl">Demo Video URL</Label>
-              <Input id="demoVideoUrl" value={demoVideoUrl} onChange={(e) => setDemoVideoUrl(e.target.value)} placeholder="https://example.com/video.mp4" />
-            </div>
-            <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-                <Button type="submit">Create Project</Button>
-            </div>
-          </form>
+        <CardContent className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full pr-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="title">Project Title</Label>
+                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Interactive Data Dashboard" required />
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                  <Select onValueChange={setCategoryId} value={categoryId} required>
+                      <SelectTrigger id="category">
+                          <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          {CATEGORIES.map(category => (
+                              <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+                          ))}
+                      </SelectContent>
+                  </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Short Description</Label>
+                <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A brief summary of the project." required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="myContribution">My Contribution</Label>
+                <Textarea id="myContribution" value={myContribution} onChange={(e) => setMyContribution(e.target.value)} placeholder="Describe your role and contributions..." required rows={5} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="techStack">Tech Stack (comma-separated)</Label>
+                <Input id="techStack" value={techStack} onChange={(e) => setTechStack(e.target.value)} placeholder="e.g., React, Next.js, Tailwind CSS" required />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                      <Label htmlFor="demoPhotoUrl">Demo Photo URL</Label>
+                      <Input id="demoPhotoUrl" value={demoPhotoUrl} onChange={(e) => setDemoPhotoUrl(e.target.value)} placeholder="https://example.com/image.jpg" />
+                  </div>
+                  <div className="space-y-2">
+                      <Label htmlFor="flowchartUrl">Flowchart URL</Label>
+                      <Input id="flowchartUrl" value={flowchartUrl} onChange={(e) => setFlowchartUrl(e.target.value)} placeholder="https://example.com/flowchart.png" />
+                  </div>
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="demoVideoUrl">Demo Video URL</Label>
+                <Input id="demoVideoUrl" value={demoVideoUrl} onChange={(e) => setDemoVideoUrl(e.target.value)} placeholder="https://example.com/video.mp4" />
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
+                  <Button type="submit">Create Project</Button>
+              </div>
+            </form>
+          </ScrollArea>
         </CardContent>
       </Card>
     </div>
