@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Category } from "@/lib/types";
@@ -27,7 +28,7 @@ export function DesktopIcon({ category }: DesktopIconProps) {
       title={category.name}
     >
       <Folder className="w-14 h-14 text-primary" strokeWidth={1} />
-      <p className="text-sm text-center text-foreground font-medium truncate w-full">
+      <p className="text-sm text-center text-white font-medium truncate w-full" style={{ textShadow: '0 0 5px hsl(var(--primary))' }}>
         {category.name}
       </p>
     </div>
