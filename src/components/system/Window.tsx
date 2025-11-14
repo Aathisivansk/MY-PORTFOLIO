@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
@@ -106,7 +107,7 @@ export const Window: React.FC<WindowInstance> = (props) => {
       onMouseDown={handleFocus}
     >
       <div
-        className="h-10 flex items-center justify-between px-3 cursor-grab active:cursor-grabbing rounded-t-lg bg-white/10"
+        className="h-10 flex items-center justify-between px-3 cursor-grab active:cursor-grabbing rounded-t-lg bg-white/20"
         onMouseDown={onDragStart}
         onDoubleClick={() => toggleMaximize(id)}
       >
