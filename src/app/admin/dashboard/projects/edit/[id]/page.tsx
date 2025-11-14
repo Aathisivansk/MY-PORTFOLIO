@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,28 +11,34 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { CATEGORIES } from '@/lib/data';
+import { CATEGORIES, PROJECTS } from '@/lib/data';
 import { ArrowLeft } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Project } from '@/lib/types';
 
-export default function NewProjectPage() {
+export default function EditProjectPage() {
   const router = useRouter();
+  const params = useParams();
   const { toast } = useToast();
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [myContribution, setMyContribution] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [techStack, setTechStack] = useState('');
-  const [demoPhotoUrl, setDemoPhotoUrl] = useState('');
-  const [demoVideoUrl, setDemoVideoUrl] = useState('');
-  const [flowchartUrl, setFlowchartUrl] = useState('');
+  const projectId = params.id as string;
 
-  const handleFileChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [project, setProject] = useState<Project | null>(null);
+  
+  useEffect(() => {
+    // In a real app, you'd fetch this from an API.
+    const projectToEdit = PROJECTS.find(p => p.id === projectId);
+    if (projectToEdit) {
+      setProject(projectToEdit);
+    } else {
+      toast({ title: "Error", description: "Project not found.", variant: "destructive" });
+      router.push('/admin/dashboard/projects');
+    }
+  }, [projectId, router, toast]);
+
+  const handleFileChange = (setter: (value: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      // In a real app, you'd upload this and get a URL.
-      // For now, we'll just store a temporary object URL.
       setter(URL.createObjectURL(file));
       console.log("File selected:", file.name);
     }
@@ -40,25 +46,23 @@ export default function NewProjectPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!project) return;
     // In a real app, you'd send this to an API
-    console.log({
-      title,
-      description,
-      myContribution,
-      categoryId,
-      techStack: techStack.split(',').map(s => s.trim()),
-      demo_photo_url: demoPhotoUrl,
-      demo_video_url: demoVideoUrl,
-      flowchart_url: flowchartUrl,
-    });
+    console.log("Updating project:", project);
     toast({
-      title: "Project Created",
-      description: `"${title}" has been successfully created.`,
+      title: "Project Updated",
+      description: `"${project.title}" has been successfully updated.`,
     });
     router.push('/admin/dashboard/projects');
   };
 
-  const renderMediaInput = (id: string, label: string, value: string, setter: React.Dispatch<React.SetStateAction<string>>) => (
+  const handleInputChange = (field: keyof Project, value: string | string[]) => {
+    if (project) {
+        setProject({ ...project, [field]: value });
+    }
+  };
+
+  const renderMediaInput = (id: string, label: string, value: string, setter: (value: string) => void) => (
     <div className="space-y-2">
       <Label htmlFor={`${id}-url`}>{label}</Label>
       <Tabs defaultValue="url" className="w-full">
@@ -67,7 +71,7 @@ export default function NewProjectPage() {
           <TabsTrigger value="upload">Upload</TabsTrigger>
         </TabsList>
         <TabsContent value="url">
-          <Input id={`${id}-url`} value={value} onChange={(e) => setter(e.target.value)} placeholder="https://example.com/image.jpg" />
+          <Input id={`${id}-url`} value={value || ''} onChange={(e) => setter(e.target.value)} placeholder="https://example.com/image.jpg" />
         </TabsContent>
         <TabsContent value="upload">
           <Input id={`${id}-upload`} type="file" onChange={handleFileChange(setter)} />
@@ -75,6 +79,10 @@ export default function NewProjectPage() {
       </Tabs>
     </div>
   );
+
+  if (!project) {
+    return <div>Loading...</div>; // Or a skeleton loader
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -84,19 +92,19 @@ export default function NewProjectPage() {
         </Link>
       <Card className="flex-1 flex flex-col">
         <CardHeader>
-          <CardTitle>Create New Project</CardTitle>
-          <CardDescription>Fill out the form below to add a new project to your portfolio.</CardDescription>
+          <CardTitle>Edit Project: {project.title}</CardTitle>
+          <CardDescription>Update the details for this project.</CardDescription>
         </CardHeader>
         <CardContent className="flex-1 overflow-hidden">
           <ScrollArea className="h-full pr-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Project Title</Label>
-                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Interactive Data Dashboard" />
+                <Input id="title" value={project.title} onChange={(e) => handleInputChange('title', e.target.value)} placeholder="e.g., Interactive Data Dashboard" />
               </div>
                <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
-                  <Select onValueChange={setCategoryId} value={categoryId}>
+                  <Select onValueChange={(val) => handleInputChange('categoryId', val)} value={project.categoryId}>
                       <SelectTrigger id="category">
                           <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
@@ -109,24 +117,24 @@ export default function NewProjectPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Short Description</Label>
-                <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A brief summary of the project." />
+                <Input id="description" value={project.description} onChange={(e) => handleInputChange('description', e.target.value)} placeholder="A brief summary of the project." />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="myContribution">My Contribution</Label>
-                <Textarea id="myContribution" value={myContribution} onChange={(e) => setMyContribution(e.target.value)} placeholder="Describe your role and contributions..." rows={5} />
+                <Textarea id="myContribution" value={project.myContribution} onChange={(e) => handleInputChange('myContribution', e.target.value)} placeholder="Describe your role and contributions..." rows={5} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="techStack">Tech Stack (comma-separated)</Label>
-                <Input id="techStack" value={techStack} onChange={(e) => setTechStack(e.target.value)} placeholder="e.g., React, Next.js, Tailwind CSS" />
+                <Input id="techStack" value={project.techStack.join(', ')} onChange={(e) => handleInputChange('techStack', e.target.value.split(',').map(s => s.trim()))} placeholder="e.g., React, Next.js, Tailwind CSS" />
               </div>
               
-              {renderMediaInput("demoPhoto", "Demo Photo", demoPhotoUrl, setDemoPhotoUrl)}
-              {renderMediaInput("flowchart", "Flowchart", flowchartUrl, setFlowchartUrl)}
-              {renderMediaInput("demoVideo", "Demo Video", demoVideoUrl, setDemoVideoUrl)}
+              {renderMediaInput("demoPhoto", "Demo Photo", project.demo_photo_url || '', (val) => handleInputChange('demo_photo_url', val))}
+              {renderMediaInput("flowchart", "Flowchart", project.flowchart_url || '', (val) => handleInputChange('flowchart_url', val))}
+              {renderMediaInput("demoVideo", "Demo Video", project.demo_video_url || '', (val) => handleInputChange('demo_video_url', val))}
 
               <div className="flex justify-end gap-2 pt-4">
                   <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-                  <Button type="submit">Create Project</Button>
+                  <Button type="submit">Save Changes</Button>
               </div>
             </form>
           </ScrollArea>

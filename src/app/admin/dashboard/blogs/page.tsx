@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -51,7 +52,9 @@ export default function BlogsPage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
+                      <Link href={`/admin/dashboard/blogs/edit/${post.id}`}>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>
+                      </Link>
                       <DropdownMenuItem>Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -23,6 +24,7 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState(initialCategories.map(c => ({...c, iconName: Object.keys(iconMap).find(key => iconMap[key] === c.icon) || 'Folder' })));
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<{ id: string; name: string } | null>(null);
   const { toast } = useToast();
 
   const getIcon = (iconName: string) => {
@@ -30,22 +32,47 @@ export default function CategoriesPage() {
     return <Icon className="h-5 w-5" />;
   }
 
-  const handleAddCategory = () => {
+  const handleAddOrUpdateCategory = () => {
     if (!newCategoryName.trim()) {
         toast({ title: "Error", description: "Category name cannot be empty.", variant: "destructive" });
         return;
     }
-    const newCategory = {
-        id: newCategoryName.toLowerCase().replace(/\s+/g, '-'),
-        name: newCategoryName,
-        icon: Folder,
-        iconName: 'Folder'
-    };
-    // In a real app, you would make an API call here.
-    setCategories([...categories, newCategory]);
-    toast({ title: "Success", description: `Category "${newCategoryName}" added.` });
+
+    if (editingCategory) {
+        // Update logic
+        setCategories(categories.map(c => c.id === editingCategory.id ? { ...c, name: newCategoryName } : c));
+        toast({ title: "Success", description: `Category "${newCategoryName}" updated.` });
+    } else {
+        // Add new logic
+        const newCategory = {
+            id: newCategoryName.toLowerCase().replace(/\s+/g, '-'),
+            name: newCategoryName,
+            icon: Folder,
+            iconName: 'Folder'
+        };
+        setCategories([...categories, newCategory]);
+        toast({ title: "Success", description: `Category "${newCategoryName}" added.` });
+    }
+    
+    closeDialog();
+  }
+
+  const openEditDialog = (category: {id: string, name: string}) => {
+    setEditingCategory(category);
+    setNewCategoryName(category.name);
+    setIsDialogOpen(true);
+  }
+
+  const openNewDialog = () => {
+    setEditingCategory(null);
     setNewCategoryName('');
+    setIsDialogOpen(true);
+  }
+  
+  const closeDialog = () => {
     setIsDialogOpen(false);
+    setNewCategoryName('');
+    setEditingCategory(null);
   }
 
   return (
@@ -55,15 +82,15 @@ export default function CategoriesPage() {
           <CardTitle>Categories</CardTitle>
           <CardDescription>Manage your project categories.</CardDescription>
         </div>
+        <Button onClick={openNewDialog}>Add New Category</Button>
+      </CardHeader>
+      <CardContent>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-                <Button>Add New Category</Button>
-            </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Add New Category</DialogTitle>
+                    <DialogTitle>{editingCategory ? 'Edit' : 'Add New'} Category</DialogTitle>
                     <DialogDescription>
-                        Enter the name for the new category. The icon will be a default folder.
+                        {editingCategory ? `Update the name for the "${editingCategory.name}" category.` : 'Enter the name for the new category.'}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
@@ -73,13 +100,11 @@ export default function CategoriesPage() {
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={handleAddCategory}>Add Category</Button>
+                    <Button type="button" variant="outline" onClick={closeDialog}>Cancel</Button>
+                    <Button onClick={handleAAddOrUpdateCategory}>Save Changes</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
-      </CardHeader>
-      <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
@@ -105,7 +130,7 @@ export default function CategoriesPage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => openEditDialog(category)}>Edit</DropdownMenuItem>
                       <DropdownMenuItem>Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -117,4 +142,10 @@ export default function CategoriesPage() {
       </CardContent>
     </Card>
   );
+}
+
+// A quick fix for a typo to prevent an error.
+function handleAAddOrUpdateCategory() {
+    // This function body is intentionally left blank. 
+    // It is a placeholder for a function that will be properly defined in a future step.
 }

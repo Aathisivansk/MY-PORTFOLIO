@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Project } from '@/lib/types';
@@ -16,36 +17,43 @@ export function ProjectShowcase({ project }: ProjectShowcaseProps) {
   const renderMedia = () => {
     const hasFlowchart = !!project.flowchart_url;
     const hasDemoPhoto = !!project.demo_photo_url;
+    const hasDemoVideo = !!project.demo_video_url;
     
-    if (!hasFlowchart && !hasDemoPhoto && !project.demo_video_url) return null;
+    if (!hasFlowchart && !hasDemoPhoto && !hasDemoVideo) return null;
 
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {hasFlowchart && (
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Flowchart</h3>
-            <div className="relative aspect-video rounded-md overflow-hidden border border-border cursor-pointer" onClick={() => setLightboxImage(project.flowchart_url!)}>
-              <Image src={project.flowchart_url!} alt="Flowchart" layout="fill" objectFit="cover" data-ai-hint="flowchart diagram"/>
-            </div>
-          </div>
-        )}
-        {hasDemoPhoto && (
-           <div>
+    const mediaItems = [
+        hasDemoPhoto && (
+           <div key="demo-photo">
             <h3 className="text-lg font-semibold mb-2">Demo Screenshot</h3>
              <div className="relative aspect-video rounded-md overflow-hidden border border-border cursor-pointer" onClick={() => setLightboxImage(project.demo_photo_url!)}>
                <Image src={project.demo_photo_url!} alt="Demo" layout="fill" objectFit="cover" data-ai-hint="dashboard analytics" />
             </div>
            </div>
-        )}
-        {project.demo_video_url && (
-            <div className="md:col-span-2">
-                <h3 className="text-lg font-semibold mb-2">Demo Video</h3>
-                <div className="aspect-video bg-black rounded-md overflow-hidden border border-border">
-                    <video src={project.demo_video_url} controls className="w-full h-full object-contain" />
-                </div>
+        ),
+        hasFlowchart && (
+          <div key="flowchart">
+            <h3 className="text-lg font-semibold mb-2">Flowchart</h3>
+            <div className="relative aspect-video rounded-md overflow-hidden border border-border cursor-pointer" onClick={() => setLightboxImage(project.flowchart_url!)}>
+              <Image src={project.flowchart_url!} alt="Flowchart" layout="fill" objectFit="cover" data-ai-hint="flowchart diagram"/>
             </div>
-        )}
-      </div>
+          </div>
+        ),
+    ].filter(Boolean);
+
+    return (
+        <div className='space-y-4'>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {mediaItems}
+            </div>
+            {hasDemoVideo && (
+                <div>
+                    <h3 className="text-lg font-semibold mb-2">Demo Video</h3>
+                    <div className="aspect-video bg-black rounded-md overflow-hidden border border-border">
+                        <video src={project.demo_video_url} controls className="w-full h-full object-contain" />
+                    </div>
+                </div>
+            )}
+        </div>
     )
   }
 
@@ -54,7 +62,7 @@ export function ProjectShowcase({ project }: ProjectShowcaseProps) {
       {lightboxImage && <Lightbox imageUrl={lightboxImage} onClose={() => setLightboxImage(null)} />}
       <div>
         <h2 className="text-3xl font-bold text-foreground">{project.title}</h2>
-        <p className="text-muted-foreground mt-1">{project.description}</p>
+        {project.description && <p className="text-muted-foreground mt-1">{project.description}</p>}
       </div>
 
       {project.myContribution && (
