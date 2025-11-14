@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -6,12 +7,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
-import { FileText, Home, Mail, Star } from "lucide-react"
+import { FileText, Home, Mail, Star, Moon, Sun } from "lucide-react"
 import Link from 'next/link';
 import { useDesktop } from "@/contexts/DesktopContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export function StartMenu() {
   const { openWindow } = useDesktop();
+  const { theme, toggleTheme } = useTheme();
 
   const menuItems = [
     { name: 'Home', icon: Home, href: '/', action: () => {} },
@@ -28,9 +31,14 @@ export function StartMenu() {
       </PopoverTrigger>
       <PopoverContent side="top" align="start" className="w-64 glassmorphic border-none p-2 mb-2">
         <div className="flex flex-col gap-1">
-            <div className="p-2">
-                <h3 className="text-lg font-bold text-foreground">aathisivan.dev</h3>
-                <p className="text-sm text-foreground/70">Liquid Crystal OS</p>
+            <div className="p-2 flex justify-between items-center">
+                <div>
+                    <h3 className="text-lg font-bold text-foreground">aathisivan.dev</h3>
+                    <p className="text-sm text-foreground/70">Liquid Crystal OS</p>
+                </div>
+                 <Button variant="ghost" size="icon" onClick={toggleTheme} className="w-10 h-10 hover:bg-primary/20">
+                    {theme === 'light' ? <Moon className="text-primary" /> : <Sun className="text-primary" />}
+                 </Button>
             </div>
           {menuItems.map((item) => {
             const content = (

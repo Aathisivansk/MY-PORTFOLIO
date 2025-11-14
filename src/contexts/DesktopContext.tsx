@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { WindowInstance } from '@/lib/types';
@@ -7,6 +8,7 @@ import { CATEGORIES } from '@/lib/data';
 import { BlogList } from '@/components/content/BlogList';
 import { ContactForm } from '@/components/content/ContactForm';
 import { Code, FileText, Mail } from 'lucide-react';
+import { ThemeProvider } from './ThemeContext';
 
 interface DesktopContextType {
   windows: WindowInstance[];
@@ -34,7 +36,7 @@ type OpenWindowArgs = {
 let windowCount = 0;
 let highestZIndex = 0;
 
-export const DesktopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const DesktopProviderInternal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [windows, setWindows] = useState<WindowInstance[]>([]);
 
   const getInitialPosition = useCallback(() => {
@@ -159,6 +161,16 @@ export const DesktopProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   return <DesktopContext.Provider value={value}>{children}</DesktopContext.Provider>;
+};
+
+export const DesktopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <ThemeProvider>
+        <DesktopProviderInternal>
+            {children}
+        </DesktopProviderInternal>
+    </ThemeProvider>
+  );
 };
 
 export const useDesktop = (): DesktopContextType => {
