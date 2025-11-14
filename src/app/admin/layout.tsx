@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import useLocalStorage from '@/hooks/use-local-storage';
 
 export default function AdminLayout({
@@ -11,17 +11,30 @@ export default function AdminLayout({
 }) {
   const [isAuthenticated] = useLocalStorage('is-authenticated', false);
   const router = useRouter();
+  const pathname = usePathname();
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // We check if window is defined to ensure this runs only on the client
-    if (typeof window !== 'undefined' && !isAuthenticated) {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isMounted && !isAuthenticated && pathname !== '/admin') {
       router.push('/admin');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, isMounted, pathname]);
+
+  if (!isMounted) {
+    return null; // Don't render anything on the server or during initial client render
+  }
   
-  // While checking or if not authenticated, we can show a loader or nothing
-  if (!isAuthenticated) {
+  if (!isAuthenticated && pathname !== '/admin') {
     return null; 
+  }
+
+  if (isAuthenticated && pathname === '/admin') {
+    router.push('/admin/dashboard');
+    return null;
   }
 
   return <>{children}</>;
