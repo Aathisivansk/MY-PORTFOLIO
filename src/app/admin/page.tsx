@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useLocalStorage from '@/hooks/use-local-storage';
 import { Button } from "@/components/ui/button";
@@ -11,14 +11,9 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useLocalStorage('is-authenticated', false);
+  const [, setIsAuthenticated] = useLocalStorage('is-authenticated', false);
   const router = useRouter();
   const { toast } = useToast();
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,17 +28,6 @@ export default function AdminLoginPage() {
       });
     }
   };
-  
-  useEffect(() => {
-    if (isMounted && isAuthenticated) {
-      router.push('/admin/dashboard');
-    }
-  }, [isAuthenticated, router, isMounted]);
-
-  if (!isMounted || isAuthenticated) {
-    // Show nothing on server, or during hydration, or if already authenticated
-    return null;
-  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-muted/40">

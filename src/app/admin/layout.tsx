@@ -1,14 +1,10 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import useLocalStorage from '@/hooks/use-local-storage';
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function AdminLayout({ children }: { children: ReactNode }) {
   const [isAuthenticated] = useLocalStorage('is-authenticated', false);
   const router = useRouter();
   const pathname = usePathname();
@@ -19,23 +15,24 @@ export default function AdminLayout({
   }, []);
 
   useEffect(() => {
-    if (isMounted && !isAuthenticated && pathname !== '/admin') {
-      router.push('/admin');
+    if (isMounted) {
+      if (!isAuthenticated && pathname !== '/admin') {
+        router.push('/admin');
+      } else if (isAuthenticated && pathname === '/admin') {
+        router.push('/admin/dashboard');
+      }
     }
-  }, [isAuthenticated, router, isMounted, pathname]);
+  }, [isMounted, isAuthenticated, pathname, router]);
 
   if (!isMounted) {
-    return null; // Don't render anything on the server or during initial client render
-  }
-  
-  if (!isAuthenticated && pathname !== '/admin') {
-    return null; 
+    return null; // Prevent server-side rendering of protected content
   }
 
-  if (isAuthenticated && pathname === '/admin') {
-    router.push('/admin/dashboard');
-    return null;
+  // Render children only if authenticated or on the login page itself
+  if (isAuthenticated || pathname === '/admin') {
+    return <>{children}</>;
   }
 
-  return <>{children}</>;
+  // If not authenticated and not on login page, show nothing while redirecting
+  return null;
 }
