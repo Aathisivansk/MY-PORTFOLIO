@@ -47,7 +47,13 @@ export default function EditProjectPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!project) return;
+    
     // In a real app, you'd send this to an API
+    const projectIndex = PROJECTS.findIndex(p => p.id === projectId);
+    if (projectIndex !== -1) {
+      PROJECTS[projectIndex] = project;
+    }
+    
     console.log("Updating project:", project);
     toast({
       title: "Project Updated",

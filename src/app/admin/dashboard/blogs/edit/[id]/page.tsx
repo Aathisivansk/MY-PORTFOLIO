@@ -36,7 +36,13 @@ export default function EditBlogPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!post) return;
+    
     // In a real app, you'd send this to an API
+    const postIndex = BLOG_POSTS.findIndex(p => p.id === blogId);
+    if (postIndex !== -1) {
+      BLOG_POSTS[postIndex] = post;
+    }
+
     console.log("Updating post:", post);
     toast({
       title: "Blog Post Updated",
