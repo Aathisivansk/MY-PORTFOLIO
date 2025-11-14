@@ -1,3 +1,34 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "project-1-flowchart",
+      "description": "Flowchart for Project One",
+      "imageUrl": "https://images.unsplash.com/photo-1738028449238-fa5ae8c33bce?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxmbG93Y2hhcnQlMjBkaWFncmFtfGVufDB8fHx8MTc2MzA5MTU2MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "flowchart diagram"
+    },
+    {
+      "id": "project-1-demo",
+      "description": "Demo for Project One",
+      "imageUrl": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxsYXB0b3AlMjBjb2RlfGVufDB8fHx8MTc2MzE0MzY4NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "laptop code"
+    },
+    {
+      "id": "project-2-demo",
+      "description": "Demo for Project Two",
+      "imageUrl": "https://images.unsplash.com/photo-1608222351212-18fe0ec7b13b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxkYXNoYm9hcmQlMjBhbmFseXRpY3N8ZW58MHx8fHwxNzYzMDg2Nzg3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dashboard analytics"
+    },
+    {
+      "id": "project-3-flowchart",
+      "description": "Flowchart for Project Three",
+      "imageUrl": "https://images.unsplash.com/photo-1647880087466-a1318b812de5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHx3aXJlZnJhbWUlMjBhcHB8ZW58MHx8fHwxNzYzMTQzODQwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "wireframe app"
+    },
+    {
+      "id": "project-4-demo",
+      "description": "Demo for Project Four",
+      "imageUrl": "https://images.unsplash.com/photo-1601972599720-36938d4ecd31?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bW9iaWxlJTIwYXBwfGVufDB8fHx8MTc2MzEyNzY1MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "mobile app"
+    }
+  ]
 }
