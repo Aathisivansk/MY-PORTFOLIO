@@ -1,7 +1,8 @@
+
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import Image from 'next/image';
 
 interface LightboxProps {
@@ -69,6 +70,7 @@ export function Lightbox({ imageUrl, onClose }: LightboxProps) {
         className="bg-black/80 border-none p-0 w-screen h-screen max-w-full flex items-center justify-center data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0" 
         onWheel={handleWheel}
       >
+        <DialogTitle className="sr-only">Image Lightbox</DialogTitle>
         <div
           ref={imgRef}
           className="relative w-full h-full cursor-grab"
