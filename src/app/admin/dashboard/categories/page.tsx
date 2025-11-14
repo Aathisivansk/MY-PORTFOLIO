@@ -1,0 +1,120 @@
+"use client";
+
+import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { CATEGORIES as initialCategories } from "@/lib/data";
+import { MoreHorizontal, Folder, Code, Cloud, Bot } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+
+const iconMap: { [key: string]: React.ElementType } = {
+    Code,
+    Cloud,
+    Bot,
+    Folder,
+};
+
+export default function CategoriesPage() {
+  const [categories, setCategories] = useState(initialCategories.map(c => ({...c, iconName: Object.keys(iconMap).find(key => iconMap[key] === c.icon) || 'Folder' })));
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  const getIcon = (iconName: string) => {
+    const Icon = iconMap[iconName] || Folder;
+    return <Icon className="h-5 w-5" />;
+  }
+
+  const handleAddCategory = () => {
+    if (!newCategoryName.trim()) {
+        toast({ title: "Error", description: "Category name cannot be empty.", variant: "destructive" });
+        return;
+    }
+    const newCategory = {
+        id: newCategoryName.toLowerCase().replace(/\s+/g, '-'),
+        name: newCategoryName,
+        icon: Folder,
+        iconName: 'Folder'
+    };
+    // In a real app, you would make an API call here.
+    setCategories([...categories, newCategory]);
+    toast({ title: "Success", description: `Category "${newCategoryName}" added.` });
+    setNewCategoryName('');
+    setIsDialogOpen(false);
+  }
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Categories</CardTitle>
+          <CardDescription>Manage your project categories.</CardDescription>
+        </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+                <Button>Add New Category</Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Add New Category</DialogTitle>
+                    <DialogDescription>
+                        Enter the name for the new category. The icon will be a default folder.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-right">Name</Label>
+                        <Input id="name" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} className="col-span-3" />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={handleAddCategory}>Add Category</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Icon</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>ID</TableHead>
+              <TableHead><span className="sr-only">Actions</span></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {categories.map((category) => (
+              <TableRow key={category.id}>
+                <TableCell>{getIcon(category.iconName)}</TableCell>
+                <TableCell className="font-medium">{category.name}</TableCell>
+                <TableCell className="text-muted-foreground">{category.id}</TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button aria-haspopup="true" size="icon" variant="ghost">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Toggle menu</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuItem>Edit</DropdownMenuItem>
+                      <DropdownMenuItem>Delete</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
