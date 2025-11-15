@@ -11,10 +11,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import type { Category } from '@/lib/types';
-import { ArrowLeft } from 'lucide-react';
+import type { Category, ProjectFile } from '@/lib/types';
+import { ArrowLeft, UploadCloud, X, File as FileIcon } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from '@/components/ui/badge';
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function NewProjectPage() {
   const [demoPhotoUrl, setDemoPhotoUrl] = useState('');
   const [demoVideoUrl, setDemoVideoUrl] = useState('');
   const [flowchartUrl, setFlowchartUrl] = useState('');
+  const [otherFiles, setOtherFiles] = useState<ProjectFile[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -55,6 +57,25 @@ export default function NewProjectPage() {
       reader.readAsDataURL(file);
     }
   };
+  
+  const handleOtherFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (loadEvent) => {
+        if (loadEvent.target && typeof loadEvent.target.result === 'string') {
+          setOtherFiles(prev => [...prev, { name: file.name, dataUri: loadEvent.target!.result as string }]);
+        }
+      };
+      reader.readAsDataURL(file);
+      e.target.value = ''; // Reset file input
+    }
+  };
+
+  const removeOtherFile = (index: number) => {
+    setOtherFiles(files => files.filter((_, i) => i !== index));
+  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +90,7 @@ export default function NewProjectPage() {
       demo_photo_url: demoPhotoUrl,
       demo_video_url: demoVideoUrl,
       flowchart_url: flowchartUrl,
+      otherFiles: otherFiles
     };
 
     try {
@@ -157,6 +179,30 @@ export default function NewProjectPage() {
               {renderMediaInput("demoPhoto", "Demo Photo", demoPhotoUrl, setDemoPhotoUrl)}
               {renderMediaInput("flowchart", "Flowchart", flowchartUrl, setFlowchartUrl)}
               {renderMediaInput("demoVideo", "Demo Video", demoVideoUrl, setDemoVideoUrl)}
+
+              <div className="space-y-4">
+                <Label>Other Project Files</Label>
+                <div className="border border-dashed border-input rounded-md p-4 text-center">
+                    <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <Label htmlFor="other-files-upload" className="cursor-pointer text-primary font-medium mt-2 block">
+                        Click to upload files
+                    </Label>
+                    <Input id="other-files-upload" type="file" className="hidden" onChange={handleOtherFilesChange} disabled={isSubmitting} />
+                </div>
+                <div className="space-y-2">
+                    {otherFiles.map((file, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 rounded-md bg-secondary">
+                            <div className="flex items-center gap-2">
+                                <FileIcon className="h-5 w-5 text-muted-foreground" />
+                                <span className="text-sm font-medium">{file.name}</span>
+                            </div>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeOtherFile(index)} disabled={isSubmitting}>
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ))}
+                </div>
+              </div>
 
               <div className="flex justify-end gap-2 pt-4">
                   <Button type="button" variant="outline" onClick={() => router.back()} disabled={isSubmitting}>Cancel</Button>

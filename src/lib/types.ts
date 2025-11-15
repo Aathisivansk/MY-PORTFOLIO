@@ -7,6 +7,11 @@ export type Category = {
   iconName: string;
 };
 
+export type ProjectFile = {
+  name: string;
+  dataUri: string;
+};
+
 export type Project = {
   id: string;
   categoryId: string;
@@ -17,6 +22,7 @@ export type Project = {
   flowchart_url?: string;
   demo_photo_url?: string;
   demo_video_url?: string;
+  otherFiles?: ProjectFile[];
 };
 
 export type BlogPost = {

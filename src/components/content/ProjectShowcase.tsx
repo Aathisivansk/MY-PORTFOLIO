@@ -1,11 +1,13 @@
 
 "use client";
 
-import type { Project } from '@/lib/types';
+import type { Project, ProjectFile } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { useState } from 'react';
 import { Lightbox } from '../ui/lightbox';
+import { Button } from '../ui/button';
+import { Download, File as FileIcon } from 'lucide-react';
 
 interface ProjectShowcaseProps {
   project: Project;
@@ -13,6 +15,15 @@ interface ProjectShowcaseProps {
 
 export function ProjectShowcase({ project }: ProjectShowcaseProps) {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+
+  const handleFileDownload = (file: ProjectFile) => {
+    const link = document.createElement('a');
+    link.href = file.dataUri;
+    link.download = file.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const renderMedia = () => {
     const hasFlowchart = !!project.flowchart_url;
@@ -56,6 +67,29 @@ export function ProjectShowcase({ project }: ProjectShowcaseProps) {
         </div>
     )
   }
+  
+  const renderOtherFiles = () => {
+    if (!project.otherFiles || project.otherFiles.length === 0) return null;
+
+    return (
+      <div>
+        <h3 className="text-xl font-semibold mb-3 text-foreground">Project Files</h3>
+        <div className="space-y-2">
+            {project.otherFiles.map((file, index) => (
+                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border">
+                    <div className="flex items-center gap-3">
+                        <FileIcon className="h-6 w-6 text-primary" />
+                        <span className="font-medium text-foreground">{file.name}</span>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => handleFileDownload(file)}>
+                        <Download className="text-primary"/>
+                    </Button>
+                </div>
+            ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 pb-8">
@@ -86,6 +120,8 @@ export function ProjectShowcase({ project }: ProjectShowcaseProps) {
       )}
       
       {renderMedia()}
+      
+      {renderOtherFiles()}
 
     </div>
   );

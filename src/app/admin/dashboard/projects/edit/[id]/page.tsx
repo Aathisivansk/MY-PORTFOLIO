@@ -11,10 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, UploadCloud, File as FileIcon, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Project, Category } from '@/lib/types';
+import type { Project, Category, ProjectFile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function EditProjectPage() {
@@ -71,6 +71,28 @@ export default function EditProjectPage() {
     }
   };
 
+  const handleOtherFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (loadEvent) => {
+        if (loadEvent.target && typeof loadEvent.target.result === 'string') {
+          handleInputChange('otherFiles', [...(project?.otherFiles || []), { name: file.name, dataUri: loadEvent.target!.result as string }]);
+        }
+      };
+      reader.readAsDataURL(file);
+      e.target.value = ''; // Reset file input
+    }
+  };
+
+  const removeOtherFile = (index: number) => {
+    if (project) {
+        const updatedFiles = project.otherFiles?.filter((_, i) => i !== index);
+        handleInputChange('otherFiles', updatedFiles || []);
+    }
+  };
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!project) return;
@@ -97,7 +119,7 @@ export default function EditProjectPage() {
     }
   };
 
-  const handleInputChange = (field: keyof Project, value: string | string[]) => {
+  const handleInputChange = (field: keyof Project, value: any) => {
     if (project) {
         setProject({ ...project, [field]: value });
     }
@@ -180,6 +202,30 @@ export default function EditProjectPage() {
               {renderMediaInput("demoPhoto", "Demo Photo", project.demo_photo_url || '', (val) => handleInputChange('demo_photo_url', val))}
               {renderMediaInput("flowchart", "Flowchart", project.flowchart_url || '', (val) => handleInputChange('flowchart_url', val))}
               {renderMediaInput("demoVideo", "Demo Video", project.demo_video_url || '', (val) => handleInputChange('demo_video_url', val))}
+
+              <div className="space-y-4">
+                <Label>Other Project Files</Label>
+                <div className="border border-dashed border-input rounded-md p-4 text-center">
+                    <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <Label htmlFor="other-files-upload" className="cursor-pointer text-primary font-medium mt-2 block">
+                        Click to upload files
+                    </Label>
+                    <Input id="other-files-upload" type="file" className="hidden" onChange={handleOtherFilesChange} disabled={isSubmitting} />
+                </div>
+                <div className="space-y-2">
+                    {project.otherFiles?.map((file, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 rounded-md bg-secondary">
+                            <div className="flex items-center gap-2">
+                                <FileIcon className="h-5 w-5 text-muted-foreground" />
+                                <span className="text-sm font-medium">{file.name}</span>
+                            </div>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeOtherFile(index)} disabled={isSubmitting}>
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ))}
+                </div>
+              </div>
 
               <div className="flex justify-end gap-2 pt-4">
                   <Button type="button" variant="outline" onClick={() => router.back()} disabled={isSubmitting}>Cancel</Button>
