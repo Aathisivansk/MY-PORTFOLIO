@@ -37,10 +37,21 @@ export default function CategoriesPage() {
     setIsLoading(true);
     try {
         const response = await fetch('/api/categories');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to fetch categories.');
+        }
         const data = await response.json();
-        setCategories(data);
-    } catch (error) {
-        toast({ title: "Error", description: "Failed to fetch categories.", variant: "destructive" });
+        if (Array.isArray(data)) {
+            setCategories(data);
+        } else {
+            console.error("API did not return an array for categories:", data);
+            setCategories([]); // Reset to empty array to prevent .map error
+            throw new Error("Received unexpected data format for categories.");
+        }
+    } catch (error: any) {
+        toast({ title: "Error", description: error.message || "Failed to fetch categories.", variant: "destructive" });
+        setCategories([]); // Ensure categories is an array on error
     } finally {
         setIsLoading(false);
     }
@@ -74,14 +85,15 @@ export default function CategoriesPage() {
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to ${isEditing ? 'update' : 'add'} category`);
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'add'} category`);
         }
         
         toast({ title: "Success", description: `Category "${newCategoryName}" ${isEditing ? 'updated' : 'added'}.` });
         fetchCategories(); // Re-fetch to get the latest list
         closeDialog();
-    } catch (error) {
-        toast({ title: "Error", description: `Could not ${isEditing ? 'update' : 'add'} category.`, variant: "destructive" });
+    } catch (error: any) {
+        toast({ title: "Error", description: error.message || `Could not ${isEditing ? 'update' : 'add'} category.`, variant: "destructive" });
     } finally {
         setIsSubmitting(false);
     }
@@ -125,13 +137,14 @@ export default function CategoriesPage() {
         });
 
         if (!response.ok) {
-            throw new Error('Failed to delete category');
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to delete category');
         }
 
-        setCategories(categories.filter(c => c.id !== categoryToDelete.id));
         toast({ title: "Success", description: `Category "${categoryToDelete.name}" deleted.` });
-    } catch (error) {
-        toast({ title: "Error", description: "Could not delete category.", variant: "destructive" });
+        fetchCategories();
+    } catch (error: any) {
+        toast({ title: "Error", description: error.message || "Could not delete category.", variant: "destructive" });
     } finally {
         closeDeleteDialog();
     }
@@ -190,7 +203,7 @@ export default function CategoriesPage() {
                         <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                     </TableRow>
                 ))
-              ) : categories.map((category) => (
+              ) : (categories && categories.length > 0) ? categories.map((category) => (
                 <TableRow key={category.id}>
                   <TableCell>{getIcon(category.iconName)}</TableCell>
                   <TableCell className="font-medium">{category.name}</TableCell>
@@ -211,7 +224,11 @@ export default function CategoriesPage() {
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
-              ))}
+              )) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center">No categories found.</TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
