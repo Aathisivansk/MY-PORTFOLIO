@@ -4,6 +4,8 @@ import path from 'path';
 import fs from 'fs/promises';
 import type { BlogPost } from '@/lib/types';
 
+export const revalidate = 0;
+
 const jsonPath = path.join(process.cwd(), 'src', 'lib', 'db', 'blogs.json');
 
 async function getBlogs(): Promise<BlogPost[]> {

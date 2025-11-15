@@ -5,6 +5,8 @@ import fs from 'fs/promises';
 import { Folder, Code, Cloud, Bot } from 'lucide-react';
 import type { Category } from '@/lib/types';
 
+export const revalidate = 0;
+
 const jsonPath = path.join(process.cwd(), 'src', 'lib', 'db', 'categories.json');
 
 async function getCategories(): Promise<any[]> {
