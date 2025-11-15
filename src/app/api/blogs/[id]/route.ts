@@ -1,50 +1,48 @@
 
 import { NextResponse } from 'next/server';
-import path from 'path';
-import fs from 'fs/promises';
+import { getDb } from '@/lib/firebase/firebase';
 import type { BlogPost } from '@/lib/types';
 
-const jsonPath = path.join(process.cwd(), 'src', 'lib', 'db', 'blogs.json');
-
-async function getBlogs(): Promise<BlogPost[]> {
-    const data = await fs.readFile(jsonPath, 'utf-8');
-    return JSON.parse(data);
-}
-
-async function saveBlogs(blogs: BlogPost[]) {
-    await fs.writeFile(jsonPath, JSON.stringify(blogs, null, 2));
-}
-
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-    const blogs = await getBlogs();
-    const blog = blogs.find(b => b.id === params.id);
-    if (blog) {
-        return NextResponse.json(blog);
+    const db = getDb();
+    const docRef = db.collection('blogs').doc(params.id);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+        return NextResponse.json({ message: 'Blog not found' }, { status: 404 });
     }
-    return NextResponse.json({ message: 'Blog not found' }, { status: 404 });
+
+    const blog = { id: doc.id, ...doc.data() } as BlogPost;
+    return NextResponse.json(blog);
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-    const blogs = await getBlogs();
-    const blogIndex = blogs.findIndex(b => b.id === params.id);
-    if (blogIndex === -1) {
+    const db = getDb();
+    const docRef = db.collection('blogs').doc(params.id);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
         return NextResponse.json({ message: 'Blog not found' }, { status: 404 });
     }
-    const updatedBlog = await request.json();
-    blogs[blogIndex] = { ...blogs[blogIndex], ...updatedBlog };
-    await saveBlogs(blogs);
-    return NextResponse.json(blogs[blogIndex]);
+
+    const updatedData = await request.json();
+    await docRef.update(updatedData);
+
+    const updatedDoc = await docRef.get();
+    const updatedBlog = { id: updatedDoc.id, ...updatedDoc.data() } as BlogPost;
+
+    return NextResponse.json(updatedBlog);
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-    let blogs = await getBlogs();
-    const blogIndex = blogs.findIndex(p => p.id === params.id);
-    
-    if (blogIndex === -1) {
+    const db = getDb();
+    const docRef = db.collection('blogs').doc(params.id);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
         return NextResponse.json({ message: 'Blog not found' }, { status: 404 });
     }
-    
-    blogs = blogs.filter(p => p.id !== params.id);
-    await saveBlogs(blogs);
+
+    await docRef.delete();
     return NextResponse.json({ message: 'Blog deleted' }, { status: 200 });
 }

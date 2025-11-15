@@ -1,41 +1,35 @@
 
 import { NextResponse } from 'next/server';
-import path from 'path';
-import fs from 'fs/promises';
+import { getDb } from '@/lib/firebase/firebase';
 import type { Category } from '@/lib/types';
 
-const jsonPath = path.join(process.cwd(), 'src', 'lib', 'db', 'categories.json');
-
-async function getCategories(): Promise<any[]> {
-    const data = await fs.readFile(jsonPath, 'utf-8');
-    return JSON.parse(data);
-}
-
-async function saveCategories(categories: any[]) {
-    await fs.writeFile(jsonPath, JSON.stringify(categories, null, 2));
-}
-
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-    const categories = await getCategories();
-    const categoryIndex = categories.findIndex(c => c.id === params.id);
-    if (categoryIndex === -1) {
+    const db = getDb();
+    const docRef = db.collection('categories').doc(params.id);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
         return NextResponse.json({ message: 'Category not found' }, { status: 404 });
     }
-    const updatedCategoryData = await request.json();
-    categories[categoryIndex] = { ...categories[categoryIndex], ...updatedCategoryData };
-    await saveCategories(categories);
-    return NextResponse.json(categories[categoryIndex]);
+
+    const updatedData = await request.json();
+    await docRef.update(updatedData);
+
+    const updatedDoc = await docRef.get();
+    const updatedCategory = { id: updatedDoc.id, ...updatedDoc.data() } as Category;
+
+    return NextResponse.json(updatedCategory);
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-    let categories = await getCategories();
-    const categoryIndex = categories.findIndex(p => p.id === params.id);
-    
-    if (categoryIndex === -1) {
+    const db = getDb();
+    const docRef = db.collection('categories').doc(params.id);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
         return NextResponse.json({ message: 'Category not found' }, { status: 404 });
     }
-    
-    categories = categories.filter(p => p.id !== params.id);
-    await saveCategories(categories);
+
+    await docRef.delete();
     return NextResponse.json({ message: 'Category deleted' }, { status: 200 });
 }

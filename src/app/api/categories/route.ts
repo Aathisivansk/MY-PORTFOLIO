@@ -1,46 +1,31 @@
 
 import { NextResponse } from 'next/server';
-import path from 'path';
-import fs from 'fs/promises';
-import { Folder, Code, Cloud, Bot } from 'lucide-react';
+import { getDb } from '@/lib/firebase/firebase';
 import type { Category } from '@/lib/types';
 
 export const revalidate = 0;
 
-const jsonPath = path.join(process.cwd(), 'src', 'lib', 'db', 'categories.json');
-
-async function getCategories(): Promise<any[]> {
-    try {
-        const data = await fs.readFile(jsonPath, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-            return [];
-        }
-        throw error;
-    }
-}
-
-async function saveCategories(categories: any[]) {
-    await fs.writeFile(jsonPath, JSON.stringify(categories, null, 2));
-}
-
 export async function GET() {
-  const categories = await getCategories();
+  const db = getDb();
+  const snapshot = await db.collection('categories').get();
+  const categories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Category[];
   return NextResponse.json(categories);
 }
 
 export async function POST(request: Request) {
-    const categories = await getCategories();
-    const newCategoryData = await request.json();
-    
-    const newCategory = {
-        id: newCategoryData.name.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-        ...newCategoryData,
-        iconName: 'Folder',
-    };
-    
-    categories.push(newCategory);
-    await saveCategories(categories);
-    return NextResponse.json(newCategory, { status: 201 });
+  const db = getDb();
+  const newCategoryData = await request.json();
+  const newCategory: Omit<Category, 'id'> = {
+    ...newCategoryData,
+    iconName: 'Folder', // Default icon
+  };
+
+  const slug = newCategoryData.name.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const docRef = db.collection('categories').doc(slug);
+
+  await docRef.set(newCategory);
+
+  const createdCategory = { id: docRef.id, ...newCategory };
+
+  return NextResponse.json(createdCategory, { status: 201 });
 }

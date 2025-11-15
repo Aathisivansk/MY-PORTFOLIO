@@ -1,52 +1,38 @@
 
 import { NextResponse } from 'next/server';
-import path from 'path';
-import fs from 'fs/promises';
+import { getDb } from '@/lib/firebase/firebase';
 import type { Project } from '@/lib/types';
 
 export const revalidate = 0;
 
-const jsonPath = path.join(process.cwd(), 'src', 'lib', 'db', 'projects.json');
-
-async function getProjects(): Promise<Project[]> {
-    try {
-        const data = await fs.readFile(jsonPath, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-            return [];
-        }
-        throw error;
-    }
-}
-
-async function saveProjects(projects: Project[]) {
-    await fs.writeFile(jsonPath, JSON.stringify(projects, null, 2));
-}
-
 export async function GET(request: Request) {
+  const db = getDb();
   const { searchParams } = new URL(request.url);
   const categoryId = searchParams.get('category');
-  const projects = await getProjects();
-  
+
+  let projectsQuery = db.collection('projects');
+
   if (categoryId) {
-    const filteredProjects = projects.filter(p => p.categoryId === categoryId);
-    return NextResponse.json(filteredProjects);
+    // The following line is a valid Firestore query
+    // @ts-ignore
+    projectsQuery = projectsQuery.where('categoryId', '==', categoryId);
   }
+
+  const snapshot = await projectsQuery.get();
+  const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Project[];
 
   return NextResponse.json(projects);
 }
 
 export async function POST(request: Request) {
-    const projects = await getProjects();
-    const newProjectData = await request.json();
-    
-    const newProject: Project = {
-        id: `proj-${Date.now()}`,
-        ...newProjectData,
-    };
-    
-    projects.push(newProject);
-    await saveProjects(projects);
-    return NextResponse.json(newProject, { status: 201 });
+  const db = getDb();
+  const newProjectData = await request.json();
+  const newProject: Omit<Project, 'id'> = {
+    ...newProjectData,
+  };
+
+  const docRef = await db.collection('projects').add(newProject);
+  const createdProject = { id: docRef.id, ...newProject };
+
+  return NextResponse.json(createdProject, { status: 201 });
 }
