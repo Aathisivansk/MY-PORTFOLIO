@@ -1,35 +1,28 @@
 
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/firebase/firebase';
-import type { Category } from '@/lib/types';
+import { supabase } from '@/lib/supabase/client';
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-    const db = getDb();
-    const docRef = db.collection('categories').doc(params.id);
-    const doc = await docRef.get();
+  const updatedData = await request.json();
+  const { data: updatedCategory, error } = await supabase
+    .from('categories')
+    .update(updatedData)
+    .eq('id', params.id)
+    .single();
 
-    if (!doc.exists) {
-        return NextResponse.json({ message: 'Category not found' }, { status: 404 });
-    }
+  if (error) {
+    return NextResponse.json({ message: 'Could not update category', error }, { status: 500 });
+  }
 
-    const updatedData = await request.json();
-    await docRef.update(updatedData);
-
-    const updatedDoc = await docRef.get();
-    const updatedCategory = { id: updatedDoc.id, ...updatedDoc.data() } as Category;
-
-    return NextResponse.json(updatedCategory);
+  return NextResponse.json(updatedCategory);
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-    const db = getDb();
-    const docRef = db.collection('categories').doc(params.id);
-    const doc = await docRef.get();
+  const { error } = await supabase.from('categories').delete().eq('id', params.id);
 
-    if (!doc.exists) {
-        return NextResponse.json({ message: 'Category not found' }, { status: 404 });
-    }
+  if (error) {
+    return NextResponse.json({ message: 'Could not delete category', error }, { status: 500 });
+  }
 
-    await docRef.delete();
-    return NextResponse.json({ message: 'Category deleted' }, { status: 200 });
+  return NextResponse.json({ message: 'Category deleted' }, { status: 200 });
 }

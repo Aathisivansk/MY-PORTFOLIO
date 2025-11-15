@@ -1,31 +1,33 @@
 
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/firebase/firebase';
+import { supabase } from '@/lib/supabase/client';
 import type { Category } from '@/lib/types';
 
-export const revalidate = 0;
-
 export async function GET() {
-  const db = getDb();
-  const snapshot = await db.collection('categories').get();
-  const categories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Category[];
+  const { data: categories, error } = await supabase.from('categories').select('*');
+
+  if (error) {
+    return NextResponse.json({ message: 'Could not fetch categories', error }, { status: 500 });
+  }
+
   return NextResponse.json(categories);
 }
 
 export async function POST(request: Request) {
-  const db = getDb();
   const newCategoryData = await request.json();
   const newCategory: Omit<Category, 'id'> = {
     ...newCategoryData,
     iconName: 'Folder', // Default icon
   };
 
-  const slug = newCategoryData.name.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  const docRef = db.collection('categories').doc(slug);
+  const { data: createdCategory, error } = await supabase
+    .from('categories')
+    .insert(newCategory)
+    .single();
 
-  await docRef.set(newCategory);
-
-  const createdCategory = { id: docRef.id, ...newCategory };
+  if (error) {
+    return NextResponse.json({ message: 'Could not create category', error }, { status: 500 });
+  }
 
   return NextResponse.json(createdCategory, { status: 201 });
 }

@@ -1,48 +1,42 @@
 
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/firebase/firebase';
-import type { Project } from '@/lib/types';
+import { supabase } from '@/lib/supabase/client';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-    const db = getDb();
-    const docRef = db.collection('projects').doc(params.id);
-    const doc = await docRef.get();
+  const { data: project, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('id', params.id)
+    .single();
 
-    if (!doc.exists) {
-        return NextResponse.json({ message: 'Project not found' }, { status: 404 });
-    }
+  if (error) {
+    return NextResponse.json({ message: 'Could not fetch project', error }, { status: 500 });
+  }
 
-    const project = { id: doc.id, ...doc.data() } as Project;
-    return NextResponse.json(project);
+  return NextResponse.json(project);
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-    const db = getDb();
-    const docRef = db.collection('projects').doc(params.id);
-    const doc = await docRef.get();
+  const updatedData = await request.json();
+  const { data: updatedProject, error } = await supabase
+    .from('projects')
+    .update(updatedData)
+    .eq('id', params.id)
+    .single();
 
-    if (!doc.exists) {
-        return NextResponse.json({ message: 'Project not found' }, { status: 404 });
-    }
+  if (error) {
+    return NextResponse.json({ message: 'Could not update project', error }, { status: 500 });
+  }
 
-    const updatedData = await request.json();
-    await docRef.update(updatedData);
-
-    const updatedDoc = await docRef.get();
-    const updatedProject = { id: updatedDoc.id, ...updatedDoc.data() } as Project;
-
-    return NextResponse.json(updatedProject);
+  return NextResponse.json(updatedProject);
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-    const db = getDb();
-    const docRef = db.collection('projects').doc(params.id);
-    const doc = await docRef.get();
+  const { error } = await supabase.from('projects').delete().eq('id', params.id);
 
-    if (!doc.exists) {
-        return NextResponse.json({ message: 'Project not found' }, { status: 404 });
-    }
+  if (error) {
+    return NextResponse.json({ message: 'Could not delete project', error }, { status: 500 });
+  }
 
-    await docRef.delete();
-    return NextResponse.json({ message: 'Project deleted' }, { status: 200 });
+  return NextResponse.json({ message: 'Project deleted' }, { status: 200 });
 }

@@ -1,38 +1,41 @@
 
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/firebase/firebase';
+import { supabase } from '@/lib/supabase/client';
 import type { Project } from '@/lib/types';
 
-export const revalidate = 0;
-
 export async function GET(request: Request) {
-  const db = getDb();
   const { searchParams } = new URL(request.url);
   const categoryId = searchParams.get('category');
 
-  let projectsQuery = db.collection('projects');
+  let query = supabase.from('projects').select('*');
 
   if (categoryId) {
-    // The following line is a valid Firestore query
-    // @ts-ignore
-    projectsQuery = projectsQuery.where('categoryId', '==', categoryId);
+    query = query.eq('categoryId', categoryId);
   }
 
-  const snapshot = await projectsQuery.get();
-  const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Project[];
+  const { data: projects, error } = await query;
+
+  if (error) {
+    return NextResponse.json({ message: 'Could not fetch projects', error }, { status: 500 });
+  }
 
   return NextResponse.json(projects);
 }
 
 export async function POST(request: Request) {
-  const db = getDb();
   const newProjectData = await request.json();
   const newProject: Omit<Project, 'id'> = {
     ...newProjectData,
   };
 
-  const docRef = await db.collection('projects').add(newProject);
-  const createdProject = { id: docRef.id, ...newProject };
+  const { data: createdProject, error } = await supabase
+    .from('projects')
+    .insert(newProject)
+    .single();
+
+  if (error) {
+    return NextResponse.json({ message: 'Could not create project', error }, { status: 500 });
+  }
 
   return NextResponse.json(createdProject, { status: 201 });
 }

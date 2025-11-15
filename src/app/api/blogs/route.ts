@@ -1,26 +1,33 @@
 
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/firebase/firebase';
+import { supabase } from '@/lib/supabase/client';
 import type { BlogPost } from '@/lib/types';
 
-export const revalidate = 0;
-
 export async function GET() {
-  const db = getDb();
-  const snapshot = await db.collection('blogs').get();
-  const blogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as BlogPost[];
+  const { data: blogs, error } = await supabase.from('blogs').select('*');
+
+  if (error) {
+    return NextResponse.json({ message: 'Could not fetch blogs', error }, { status: 500 });
+  }
+
   return NextResponse.json(blogs);
 }
 
 export async function POST(request: Request) {
-  const db = getDb();
   const newBlog = await request.json();
   const blog: Omit<BlogPost, 'id'> = {
     ...newBlog,
     createdAt: new Date().toISOString().split('T')[0],
   };
 
-  const docRef = await db.collection('blogs').add(blog);
-  const createdBlog = { id: docRef.id, ...blog };
+  const { data: createdBlog, error } = await supabase
+    .from('blogs')
+    .insert(blog)
+    .single();
+
+  if (error) {
+    return NextResponse.json({ message: 'Could not create blog', error }, { status: 500 });
+  }
+
   return NextResponse.json(createdBlog, { status: 201 });
 }

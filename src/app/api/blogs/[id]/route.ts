@@ -1,48 +1,42 @@
 
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/firebase/firebase';
-import type { BlogPost } from '@/lib/types';
+import { supabase } from '@/lib/supabase/client';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-    const db = getDb();
-    const docRef = db.collection('blogs').doc(params.id);
-    const doc = await docRef.get();
+  const { data: blog, error } = await supabase
+    .from('blogs')
+    .select('*')
+    .eq('id', params.id)
+    .single();
 
-    if (!doc.exists) {
-        return NextResponse.json({ message: 'Blog not found' }, { status: 404 });
-    }
+  if (error) {
+    return NextResponse.json({ message: 'Could not fetch blog', error }, { status: 500 });
+  }
 
-    const blog = { id: doc.id, ...doc.data() } as BlogPost;
-    return NextResponse.json(blog);
+  return NextResponse.json(blog);
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-    const db = getDb();
-    const docRef = db.collection('blogs').doc(params.id);
-    const doc = await docRef.get();
+  const updatedData = await request.json();
+  const { data: updatedBlog, error } = await supabase
+    .from('blogs')
+    .update(updatedData)
+    .eq('id', params.id)
+    .single();
 
-    if (!doc.exists) {
-        return NextResponse.json({ message: 'Blog not found' }, { status: 404 });
-    }
+  if (error) {
+    return NextResponse.json({ message: 'Could not update blog', error }, { status: 500 });
+  }
 
-    const updatedData = await request.json();
-    await docRef.update(updatedData);
-
-    const updatedDoc = await docRef.get();
-    const updatedBlog = { id: updatedDoc.id, ...updatedDoc.data() } as BlogPost;
-
-    return NextResponse.json(updatedBlog);
+  return NextResponse.json(updatedBlog);
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-    const db = getDb();
-    const docRef = db.collection('blogs').doc(params.id);
-    const doc = await docRef.get();
+  const { error } = await supabase.from('blogs').delete().eq('id', params.id);
 
-    if (!doc.exists) {
-        return NextResponse.json({ message: 'Blog not found' }, { status: 404 });
-    }
+  if (error) {
+    return NextResponse.json({ message: 'Could not delete blog', error }, { status: 500 });
+  }
 
-    await docRef.delete();
-    return NextResponse.json({ message: 'Blog deleted' }, { status: 200 });
+  return NextResponse.json({ message: 'Blog deleted' }, { status: 200 });
 }
