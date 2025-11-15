@@ -1,3 +1,4 @@
+
 [
   {
     "id": "backend",
@@ -10,8 +11,8 @@
     "iconName": "Bot"
   },
   {
-    "id": "iot&cybersecurity",
-    "name": "IoT&Cybersecurity",
+    "id": "iot-and-cybersecurity",
+    "name": "IoT & Cybersecurity",
     "iconName": "Folder"
   }
 ]

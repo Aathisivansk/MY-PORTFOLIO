@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     const newCategoryData = await request.json();
     
     const newCategory = {
-        id: newCategoryData.name.toLowerCase().replace(/\s+/g, '-'),
+        id: newCategoryData.name.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
         ...newCategoryData,
         iconName: 'Folder',
     };
