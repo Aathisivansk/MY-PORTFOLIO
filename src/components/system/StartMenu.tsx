@@ -33,8 +33,8 @@ export function StartMenu() {
         <div className="flex flex-col gap-1">
             <div className="p-2 flex justify-between items-center">
                 <div>
-                    <h3 className="text-lg font-bold text-foreground">aathisivan.dev</h3>
-                    <p className="text-sm text-foreground/70">Liquid Crystal OS</p>
+                    <h3 className="text-lg font-bold text-foreground">aathisivan.io</h3>
+                    <p className="text-sm text-foreground/70">Portfolio OS</p>
                 </div>
                  <Button variant="ghost" size="icon" onClick={toggleTheme} className="w-10 h-10 hover:bg-primary/20">
                     {theme === 'light' ? <Moon className="text-primary" /> : <Sun className="text-primary" />}

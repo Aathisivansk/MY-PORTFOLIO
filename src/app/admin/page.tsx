@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
         <CardHeader>
           <CardTitle className="text-2xl">Admin Login</CardTitle>
           <CardDescription>
-            Enter your password to access the dashboard. (Hint: the password is 'admin')
+            Enter your password to access the dashboard.
           </CardDescription>
         </CardHeader>
         <CardContent>
