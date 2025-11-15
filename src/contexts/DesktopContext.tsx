@@ -1,17 +1,18 @@
 
 "use client";
 
-import type { WindowInstance } from '@/lib/types';
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import type { WindowInstance, Category } from '@/lib/types';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { ProjectList } from '@/components/content/ProjectList';
-import { CATEGORIES } from '@/lib/data';
 import { BlogList } from '@/components/content/BlogList';
 import { ContactForm } from '@/components/content/ContactForm';
-import { Code, FileText, Mail } from 'lucide-react';
+import { Code, FileText, Mail, Folder } from 'lucide-react';
 import { ThemeProvider } from './ThemeContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface DesktopContextType {
   windows: WindowInstance[];
+  categories: Category[];
   openWindow: (args: OpenWindowArgs) => void;
   closeWindow: (id: string) => void;
   focusWindow: (id: string) => void;
@@ -38,6 +39,24 @@ let highestZIndex = 0;
 
 const DesktopProviderInternal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [windows, setWindows] = useState<WindowInstance[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const { toast } = useToast();
+
+  const fetchCategories = useCallback(async () => {
+    try {
+      const res = await fetch('/api/categories');
+      if (!res.ok) throw new Error("Failed to fetch categories");
+      const data = await res.json();
+      setCategories(data);
+    } catch (error) {
+      toast({ title: "Error", description: "Could not load desktop icons.", variant: "destructive" });
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
 
   const getInitialPosition = useCallback(() => {
     const openWindows = windows.filter(w => !w.isMinimized);
@@ -68,8 +87,9 @@ const DesktopProviderInternal: React.FC<{ children: React.ReactNode }> = ({ chil
 
       switch (type) {
         case 'CATEGORY':
-            const category = CATEGORIES.find(c => c.id === id);
+            const category = categories.find(c => c.id === id);
             newContent = <ProjectList categoryId={id} categoryName={category?.name || ''} />;
+            newIcon = Folder;
             break;
         case 'BLOGS':
             newContent = <BlogList />;
@@ -104,7 +124,7 @@ const DesktopProviderInternal: React.FC<{ children: React.ReactNode }> = ({ chil
       windowCount++;
       return [...prevWindows.map(w => ({ ...w, isFocused: false })), newWindow];
     });
-  }, [getInitialPosition]);
+  }, [getInitialPosition, categories]);
 
 
   const closeWindow = useCallback((id: string) => {
@@ -150,6 +170,7 @@ const DesktopProviderInternal: React.FC<{ children: React.ReactNode }> = ({ chil
   
   const value = {
     windows,
+    categories,
     openWindow,
     closeWindow,
     focusWindow,

@@ -1,0 +1,40 @@
+
+[
+  {
+    "id": "proj-1",
+    "categoryId": "frontend",
+    "title": "Interactive Data Dashboard",
+    "description": "A real-time data visualization tool for business analytics.",
+    "myContribution": "Led the frontend development, designing and implementing a modular component system with React and D3.js. Focused on performance optimization for large datasets and ensuring a responsive, mobile-first user experience.",
+    "techStack": ["React", "TypeScript", "D3.js", "Tailwind CSS", "Next.js"],
+    "demo_photo_url": "https://picsum.photos/seed/102/800/600"
+  },
+  {
+    "id": "proj-2",
+    "categoryId": "frontend",
+    "title": "E-commerce Platform",
+    "description": "A full-featured online store with a custom CMS.",
+    "myContribution": "Developed the entire shopping cart and checkout flow. Integrated with Stripe for payment processing and built a custom product management interface for the admin panel.",
+    "techStack": ["Vue.js", "Stripe", "GraphQL", "Node.js"],
+    "flowchart_url": "https://picsum.photos/seed/101/800/600"
+  },
+  {
+    "id": "proj-3",
+    "categoryId": "backend",
+    "title": "Cloud-Native API Gateway",
+    "description": "A scalable and secure API gateway for a microservices architecture.",
+    "myContribution": "Architected and built the core routing and authentication logic using Go. Implemented rate limiting, request logging, and JWT-based security. Deployed and managed the service on AWS using Kubernetes and Terraform.",
+    "techStack": ["Go", "Docker", "Kubernetes", "AWS", "PostgreSQL", "Terraform"],
+    "demo_photo_url": "https://picsum.photos/seed/103/800/600"
+  },
+  {
+    "id": "proj-4",
+    "categoryId": "ai-ml",
+    "title": "Image Recognition API",
+    "description": "A deep learning model to classify images with high accuracy.",
+    "myContribution": "Trained a Convolutional Neural Network (CNN) using TensorFlow and Keras on a custom dataset. Developed a REST API with Flask to serve the model predictions. Optimized the model for inference speed.",
+    "techStack": ["Python", "TensorFlow", "Keras", "Flask", "OpenCV"],
+    "flowchart_url": "https://picsum.photos/seed/104/800/600",
+    "demo_photo_url": "https://picsum.photos/seed/105/800/600"
+  }
+]

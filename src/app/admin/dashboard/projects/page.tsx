@@ -1,28 +1,51 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PROJECTS as initialProjects, CATEGORIES } from "@/lib/data";
 import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import type { Project } from '@/lib/types';
-import { PROJECTS } from '@/lib/data';
+import type { Project, Category } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState(initialProjects);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const { toast } = useToast();
 
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const [projRes, catRes] = await Promise.all([
+        fetch('/api/projects'),
+        fetch('/api/categories'),
+      ]);
+      const projData = await projRes.json();
+      const catData = await catRes.json();
+      setProjects(projData);
+      setCategories(catData);
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to fetch data.", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   const getCategoryName = (categoryId: string) => {
-    return CATEGORIES.find(c => c.id === categoryId)?.name || 'N/A';
+    return categories.find(c => c.id === categoryId)?.name || 'N/A';
   }
 
   const openDeleteDialog = (project: Project) => {
@@ -35,19 +58,23 @@ export default function ProjectsPage() {
     setIsDeleteDialogOpen(false);
   };
 
-  const handleDeleteProject = () => {
+  const handleDeleteProject = async () => {
     if (!projectToDelete) return;
 
-    const projectIndex = PROJECTS.findIndex(p => p.id === projectToDelete.id);
-    if (projectIndex > -1) {
-      PROJECTS.splice(projectIndex, 1);
+    try {
+      const response = await fetch(`/api/projects/${projectToDelete.id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error("Failed to delete project.");
+      
+      setProjects(projects.filter(p => p.id !== projectToDelete.id));
+      toast({ title: "Success", description: `Project "${projectToDelete.title}" deleted.` });
+    } catch (error) {
+      toast({ title: "Error", description: "Could not delete project.", variant: "destructive" });
+    } finally {
+      closeDeleteDialog();
     }
-
-    setProjects(projects.filter(p => p.id !== projectToDelete.id));
-    toast({ title: "Success", description: `Project "${projectToDelete.title}" deleted.` });
-    closeDeleteDialog();
   };
-
 
   return (
     <>
@@ -72,7 +99,16 @@ export default function ProjectsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {projects.map((project) => (
+              {isLoading ? (
+                 Array.from({ length: 4 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-5 w-40" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                  </TableRow>
+                ))
+              ) : projects.map((project) => (
                 <TableRow key={project.id}>
                   <TableCell className="font-medium">{project.title}</TableCell>
                   <TableCell>{getCategoryName(project.categoryId)}</TableCell>

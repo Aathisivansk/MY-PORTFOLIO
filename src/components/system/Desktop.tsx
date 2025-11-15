@@ -2,13 +2,12 @@
 "use client";
 
 import { useDesktop } from "@/contexts/DesktopContext";
-import { CATEGORIES } from "@/lib/data";
 import { DesktopIcon } from "./DesktopIcon";
 import { Window } from "./Window";
 import { AboutMe } from "../content/AboutMe";
 
 export function Desktop() {
-  const { windows } = useDesktop();
+  const { windows, categories } = useDesktop();
 
   return (
     <div id="desktop" className="h-full w-full relative p-4 overflow-hidden">
@@ -16,7 +15,7 @@ export function Desktop() {
         <AboutMe />
       </div>
       <div className="flex flex-col flex-wrap items-start content-start h-full gap-4">
-        {CATEGORIES.map(category => (
+        {categories.map(category => (
           <DesktopIcon key={category.id} category={category} />
         ))}
       </div>

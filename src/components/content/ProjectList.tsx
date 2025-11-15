@@ -1,11 +1,14 @@
+
 "use client";
 
-import { PROJECTS } from "@/lib/data";
+import { useEffect, useState } from 'react';
 import { useDesktop } from "@/contexts/DesktopContext";
 import { ProjectShowcase } from "./ProjectShowcase";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Project } from "@/lib/types";
+import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '../ui/skeleton';
 
 interface ProjectListProps {
   categoryId: string;
@@ -14,7 +17,26 @@ interface ProjectListProps {
 
 export function ProjectList({ categoryId, categoryName }: ProjectListProps) {
   const { openWindow } = useDesktop();
-  const projects = PROJECTS.filter(p => p.categoryId === categoryId);
+  const { toast } = useToast();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/projects?category=${categoryId}`);
+        if (!res.ok) throw new Error("Failed to fetch projects");
+        const data = await res.json();
+        setProjects(data);
+      } catch (error) {
+        toast({ title: "Error", description: "Could not load projects for this category.", variant: "destructive" });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProjects();
+  }, [categoryId, toast]);
 
   const handleProjectClick = (project: Project) => {
     openWindow({
@@ -25,6 +47,27 @@ export function ProjectList({ categoryId, categoryName }: ProjectListProps) {
       size: { width: 800, height: 600 }
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="p-2">
+        <h2 className="text-2xl font-bold mb-4 text-foreground">{categoryName} Projects</h2>
+        <div className="space-y-4">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="p-4 rounded-lg bg-background/50 border border-border">
+              <div className="flex justify-between items-center">
+                <div>
+                  <Skeleton className="h-6 w-48 mb-2" />
+                  <Skeleton className="h-4 w-64" />
+                </div>
+                <Skeleton className="h-8 w-8" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-2">
@@ -48,7 +91,7 @@ export function ProjectList({ categoryId, categoryName }: ProjectListProps) {
           </div>
         ))}
         {projects.length === 0 && (
-          <p className="text-muted-foreground">No projects in this category yet.</p>
+          <p className="text-muted-foreground text-center py-4">No projects in this category yet.</p>
         )}
       </div>
     </div>

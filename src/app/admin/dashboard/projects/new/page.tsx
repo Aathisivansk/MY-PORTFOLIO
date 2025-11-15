@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { CATEGORIES } from '@/lib/data';
+import type { Category } from '@/lib/types';
 import { ArrowLeft } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,21 +27,35 @@ export default function NewProjectPage() {
   const [demoPhotoUrl, setDemoPhotoUrl] = useState('');
   const [demoVideoUrl, setDemoVideoUrl] = useState('');
   const [flowchartUrl, setFlowchartUrl] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories');
+        const data = await res.json();
+        setCategories(data);
+      } catch (error) {
+        toast({ title: "Error", description: "Failed to load categories.", variant: "destructive" });
+      }
+    };
+    fetchCategories();
+  }, [toast]);
 
   const handleFileChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      // In a real app, you'd upload this and get a URL.
-      // For now, we'll just store a temporary object URL.
       setter(URL.createObjectURL(file));
       console.log("File selected:", file.name);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you'd send this to an API
-    console.log({
+    setIsSubmitting(true);
+    
+    const projectData = {
       title,
       description,
       myContribution,
@@ -50,12 +64,27 @@ export default function NewProjectPage() {
       demo_photo_url: demoPhotoUrl,
       demo_video_url: demoVideoUrl,
       flowchart_url: flowchartUrl,
-    });
-    toast({
-      title: "Project Created",
-      description: `"${title}" has been successfully created.`,
-    });
-    router.push('/admin/dashboard/projects');
+    };
+
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(projectData),
+      });
+
+      if (!response.ok) throw new Error('Failed to create project.');
+      
+      toast({
+        title: "Project Created",
+        description: `"${title}" has been successfully created.`,
+      });
+      router.push('/admin/dashboard/projects');
+      router.refresh();
+    } catch (error) {
+      toast({ title: "Error", description: "Could not create project.", variant: "destructive" });
+      setIsSubmitting(false);
+    }
   };
 
   const renderMediaInput = (id: string, label: string, value: string, setter: React.Dispatch<React.SetStateAction<string>>) => (
@@ -63,14 +92,14 @@ export default function NewProjectPage() {
       <Label htmlFor={`${id}-url`}>{label}</Label>
       <Tabs defaultValue="url" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="url">URL</TabsTrigger>
-          <TabsTrigger value="upload">Upload</TabsTrigger>
+          <TabsTrigger value="url" disabled={isSubmitting}>URL</TabsTrigger>
+          <TabsTrigger value="upload" disabled={isSubmitting}>Upload</TabsTrigger>
         </TabsList>
         <TabsContent value="url">
-          <Input id={`${id}-url`} value={value} onChange={(e) => setter(e.target.value)} placeholder="https://example.com/image.jpg" />
+          <Input id={`${id}-url`} value={value} onChange={(e) => setter(e.target.value)} placeholder="https://example.com/image.jpg" disabled={isSubmitting} />
         </TabsContent>
         <TabsContent value="upload">
-          <Input id={`${id}-upload`} type="file" onChange={handleFileChange(setter)} />
+          <Input id={`${id}-upload`} type="file" onChange={handleFileChange(setter)} disabled={isSubmitting} />
         </TabsContent>
       </Tabs>
     </div>
@@ -92,16 +121,16 @@ export default function NewProjectPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Project Title</Label>
-                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Interactive Data Dashboard" />
+                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Interactive Data Dashboard" disabled={isSubmitting} required />
               </div>
                <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
-                  <Select onValueChange={setCategoryId} value={categoryId}>
+                  <Select onValueChange={setCategoryId} value={categoryId} disabled={isSubmitting} required>
                       <SelectTrigger id="category">
                           <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                       <SelectContent>
-                          {CATEGORIES.map(category => (
+                          {categories.map(category => (
                               <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
                           ))}
                       </SelectContent>
@@ -109,15 +138,15 @@ export default function NewProjectPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Short Description</Label>
-                <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A brief summary of the project." />
+                <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A brief summary of the project." disabled={isSubmitting} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="myContribution">My Contribution</Label>
-                <Textarea id="myContribution" value={myContribution} onChange={(e) => setMyContribution(e.target.value)} placeholder="Describe your role and contributions..." rows={5} />
+                <Textarea id="myContribution" value={myContribution} onChange={(e) => setMyContribution(e.target.value)} placeholder="Describe your role and contributions..." rows={5} disabled={isSubmitting} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="techStack">Tech Stack (comma-separated)</Label>
-                <Input id="techStack" value={techStack} onChange={(e) => setTechStack(e.target.value)} placeholder="e.g., React, Next.js, Tailwind CSS" />
+                <Input id="techStack" value={techStack} onChange={(e) => setTechStack(e.target.value)} placeholder="e.g., React, Next.js, Tailwind CSS" disabled={isSubmitting} />
               </div>
               
               {renderMediaInput("demoPhoto", "Demo Photo", demoPhotoUrl, setDemoPhotoUrl)}
@@ -125,8 +154,8 @@ export default function NewProjectPage() {
               {renderMediaInput("demoVideo", "Demo Video", demoVideoUrl, setDemoVideoUrl)}
 
               <div className="flex justify-end gap-2 pt-4">
-                  <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-                  <Button type="submit">Create Project</Button>
+                  <Button type="button" variant="outline" onClick={() => router.back()} disabled={isSubmitting}>Cancel</Button>
+                  <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Creating...' : 'Create Project'}</Button>
               </div>
             </form>
           </ScrollArea>

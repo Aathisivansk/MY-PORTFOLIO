@@ -11,11 +11,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { CATEGORIES, PROJECTS } from '@/lib/data';
 import { ArrowLeft } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Project } from '@/lib/types';
+import type { Project, Category } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function EditProjectPage() {
   const router = useRouter();
@@ -24,16 +24,38 @@ export default function EditProjectPage() {
   const projectId = params.id as string;
 
   const [project, setProject] = useState<Project | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   useEffect(() => {
-    // In a real app, you'd fetch this from an API.
-    const projectToEdit = PROJECTS.find(p => p.id === projectId);
-    if (projectToEdit) {
-      setProject(projectToEdit);
-    } else {
-      toast({ title: "Error", description: "Project not found.", variant: "destructive" });
-      router.push('/admin/dashboard/projects');
-    }
+    if (!projectId) return;
+    
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [projRes, catRes] = await Promise.all([
+          fetch(`/api/projects/${projectId}`),
+          fetch('/api/categories'),
+        ]);
+
+        if (!projRes.ok) throw new Error('Project not found');
+
+        const projectData = await projRes.json();
+        const categoriesData = await catRes.json();
+        
+        setProject(projectData);
+        setCategories(categoriesData);
+
+      } catch (error) {
+        toast({ title: "Error", description: "Failed to load project data.", variant: "destructive" });
+        router.push('/admin/dashboard/projects');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
   }, [projectId, router, toast]);
 
   const handleFileChange = (setter: (value: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,22 +66,30 @@ export default function EditProjectPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!project) return;
+    setIsSubmitting(true);
     
-    // In a real app, you'd send this to an API
-    const projectIndex = PROJECTS.findIndex(p => p.id === projectId);
-    if (projectIndex !== -1) {
-      PROJECTS[projectIndex] = project;
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(project),
+      });
+
+      if (!response.ok) throw new Error('Failed to update project.');
+
+      toast({
+        title: "Project Updated",
+        description: `"${project.title}" has been successfully updated.`,
+      });
+      router.push('/admin/dashboard/projects');
+      router.refresh();
+    } catch (error) {
+       toast({ title: "Error", description: "Could not update project.", variant: "destructive" });
+       setIsSubmitting(false);
     }
-    
-    console.log("Updating project:", project);
-    toast({
-      title: "Project Updated",
-      description: `"${project.title}" has been successfully updated.`,
-    });
-    router.push('/admin/dashboard/projects');
   };
 
   const handleInputChange = (field: keyof Project, value: string | string[]) => {
@@ -73,21 +103,29 @@ export default function EditProjectPage() {
       <Label htmlFor={`${id}-url`}>{label}</Label>
       <Tabs defaultValue="url" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="url">URL</TabsTrigger>
-          <TabsTrigger value="upload">Upload</TabsTrigger>
+          <TabsTrigger value="url" disabled={isSubmitting}>URL</TabsTrigger>
+          <TabsTrigger value="upload" disabled={isSubmitting}>Upload</TabsTrigger>
         </TabsList>
         <TabsContent value="url">
-          <Input id={`${id}-url`} value={value || ''} onChange={(e) => setter(e.target.value)} placeholder="https://example.com/image.jpg" />
+          <Input id={`${id}-url`} value={value || ''} onChange={(e) => setter(e.target.value)} placeholder="https://example.com/image.jpg" disabled={isSubmitting} />
         </TabsContent>
         <TabsContent value="upload">
-          <Input id={`${id}-upload`} type="file" onChange={handleFileChange(setter)} />
+          <Input id={`${id}-upload`} type="file" onChange={handleFileChange(setter)} disabled={isSubmitting} />
         </TabsContent>
       </Tabs>
     </div>
   );
 
-  if (!project) {
-    return <div>Loading...</div>; // Or a skeleton loader
+  if (isLoading || !project) {
+    return (
+        <div className="space-y-4 p-4">
+            <Skeleton className="h-8 w-1/4" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-10 w-full" />
+        </div>
+    );
   }
 
   return (
@@ -106,16 +144,16 @@ export default function EditProjectPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Project Title</Label>
-                <Input id="title" value={project.title} onChange={(e) => handleInputChange('title', e.target.value)} placeholder="e.g., Interactive Data Dashboard" />
+                <Input id="title" value={project.title} onChange={(e) => handleInputChange('title', e.target.value)} placeholder="e.g., Interactive Data Dashboard" disabled={isSubmitting} />
               </div>
                <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
-                  <Select onValueChange={(val) => handleInputChange('categoryId', val)} value={project.categoryId}>
+                  <Select onValueChange={(val) => handleInputChange('categoryId', val)} value={project.categoryId} disabled={isSubmitting}>
                       <SelectTrigger id="category">
                           <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                       <SelectContent>
-                          {CATEGORIES.map(category => (
+                          {categories.map(category => (
                               <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
                           ))}
                       </SelectContent>
@@ -123,15 +161,15 @@ export default function EditProjectPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Short Description</Label>
-                <Input id="description" value={project.description} onChange={(e) => handleInputChange('description', e.target.value)} placeholder="A brief summary of the project." />
+                <Input id="description" value={project.description} onChange={(e) => handleInputChange('description', e.target.value)} placeholder="A brief summary of the project." disabled={isSubmitting} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="myContribution">My Contribution</Label>
-                <Textarea id="myContribution" value={project.myContribution} onChange={(e) => handleInputChange('myContribution', e.target.value)} placeholder="Describe your role and contributions..." rows={5} />
+                <Textarea id="myContribution" value={project.myContribution} onChange={(e) => handleInputChange('myContribution', e.target.value)} placeholder="Describe your role and contributions..." rows={5} disabled={isSubmitting} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="techStack">Tech Stack (comma-separated)</Label>
-                <Input id="techStack" value={project.techStack.join(', ')} onChange={(e) => handleInputChange('techStack', e.target.value.split(',').map(s => s.trim()))} placeholder="e.g., React, Next.js, Tailwind CSS" />
+                <Input id="techStack" value={project.techStack.join(', ')} onChange={(e) => handleInputChange('techStack', e.target.value.split(',').map(s => s.trim()))} placeholder="e.g., React, Next.js, Tailwind CSS" disabled={isSubmitting} />
               </div>
               
               {renderMediaInput("demoPhoto", "Demo Photo", project.demo_photo_url || '', (val) => handleInputChange('demo_photo_url', val))}
@@ -139,8 +177,8 @@ export default function EditProjectPage() {
               {renderMediaInput("demoVideo", "Demo Video", project.demo_video_url || '', (val) => handleInputChange('demo_video_url', val))}
 
               <div className="flex justify-end gap-2 pt-4">
-                  <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-                  <Button type="submit">Save Changes</Button>
+                  <Button type="button" variant="outline" onClick={() => router.back()} disabled={isSubmitting}>Cancel</Button>
+                  <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Saving...' : 'Save Changes'}</Button>
               </div>
             </form>
           </ScrollArea>

@@ -1,9 +1,10 @@
+
 import type React from 'react';
 
 export type Category = {
   id: string;
   name: string;
-  icon: React.ElementType;
+  iconName: string;
 };
 
 export type Project = {

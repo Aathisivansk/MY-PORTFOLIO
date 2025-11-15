@@ -1,0 +1,6 @@
+
+[
+  { "id": "frontend", "name": "Frontend", "iconName": "Code" },
+  { "id": "backend", "name": "Backend", "iconName": "Cloud" },
+  { "id": "ai-ml", "name": "AI/ML", "iconName": "Bot" }
+]

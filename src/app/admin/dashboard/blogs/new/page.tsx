@@ -19,16 +19,33 @@ export default function NewBlogPage() {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('aathisivan.dev');
   const [content, setContent] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you'd send this to an API
-    console.log({ title, author, content });
-    toast({
-      title: "Blog Post Created",
-      description: `"${title}" has been successfully created.`,
-    });
-    router.push('/admin/dashboard/blogs');
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch('/api/blogs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, author, content }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create blog post');
+      }
+
+      toast({
+        title: "Blog Post Created",
+        description: `"${title}" has been successfully created.`,
+      });
+      router.push('/admin/dashboard/blogs');
+      router.refresh(); // To reflect changes on the blogs page
+    } catch (error) {
+      toast({ title: "Error", description: "Could not create blog post.", variant: "destructive" });
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -47,19 +64,19 @@ export default function NewBlogPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
                         <Label htmlFor="title">Title</Label>
-                        <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Enter blog title" required />
+                        <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Enter blog title" required disabled={isSubmitting} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="author">Author</Label>
-                        <Input id="author" value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="Enter author's name" required />
+                        <Input id="author" value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="Enter author's name" required disabled={isSubmitting} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="content">Content (HTML)</Label>
-                        <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} placeholder="<p>Write your blog content here...</p>" required rows={15} />
+                        <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} placeholder="<p>Write your blog content here...</p>" required rows={15} disabled={isSubmitting} />
                     </div>
                     <div className="flex justify-end gap-2 pt-4">
-                        <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-                        <Button type="submit">Create Post</Button>
+                        <Button type="button" variant="outline" onClick={() => router.back()} disabled={isSubmitting}>Cancel</Button>
+                        <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Creating...' : 'Create Post'}</Button>
                     </div>
                 </form>
               </ScrollArea>

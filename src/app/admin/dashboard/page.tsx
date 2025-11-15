@@ -1,17 +1,49 @@
+
 "use client";
 
+import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CATEGORIES, PROJECTS, BLOG_POSTS } from "@/lib/data";
 import { ArrowUpRight } from "lucide-react";
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
-  const stats = [
-    { title: "Categories", count: CATEGORIES.length, href: "/admin/dashboard/categories" },
-    { title: "Projects", count: PROJECTS.length, href: "/admin/dashboard/projects" },
-    { title: "Blog Posts", count: BLOG_POSTS.length, href: "/admin/dashboard/blogs" },
-  ];
+  const [stats, setStats] = useState([
+    { title: "Categories", count: 0, href: "/admin/dashboard/categories" },
+    { title: "Projects", count: 0, href: "/admin/dashboard/projects" },
+    { title: "Blog Posts", count: 0, href: "/admin/dashboard/blogs" },
+  ]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      setIsLoading(true);
+      try {
+        const [catRes, projRes, blogRes] = await Promise.all([
+          fetch('/api/categories'),
+          fetch('/api/projects'),
+          fetch('/api/blogs'),
+        ]);
+
+        const catData = await catRes.json();
+        const projData = await projRes.json();
+        const blogData = await blogRes.json();
+
+        setStats([
+          { title: "Categories", count: catData.length, href: "/admin/dashboard/categories" },
+          { title: "Projects", count: projData.length, href: "/admin/dashboard/projects" },
+          { title: "Blog Posts", count: blogData.length, href: "/admin/dashboard/blogs" },
+        ]);
+
+      } catch (error) {
+        console.error("Failed to fetch dashboard stats", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCounts();
+  }, []);
 
   return (
     <div>
@@ -23,7 +55,11 @@ export default function DashboardPage() {
               <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.count}</div>
+              {isLoading ? (
+                <Skeleton className="h-8 w-12 mt-1" />
+              ) : (
+                <div className="text-2xl font-bold">{stat.count}</div>
+              )}
               <Link href={stat.href} className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary">
                 View All <ArrowUpRight className="h-4 w-4" />
               </Link>

@@ -1,25 +1,42 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BLOG_POSTS as initialBlogPosts } from "@/lib/data";
 import { MoreHorizontal } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import type { BlogPost } from '@/lib/types';
-import { BLOG_POSTS } from '@/lib/data';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function BlogsPage() {
-  const [blogPosts, setBlogPosts] = useState(initialBlogPosts);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [blogToDelete, setBlogToDelete] = useState<BlogPost | null>(null);
   const { toast } = useToast();
+
+  const fetchBlogs = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/blogs');
+      const data = await response.json();
+      setBlogPosts(data);
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to fetch blogs.", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
 
   const openDeleteDialog = (post: BlogPost) => {
     setBlogToDelete(post);
@@ -31,17 +48,25 @@ export default function BlogsPage() {
     setIsDeleteDialogOpen(false);
   };
 
-  const handleDeleteBlog = () => {
+  const handleDeleteBlog = async () => {
     if (!blogToDelete) return;
 
-    const postIndex = BLOG_POSTS.findIndex(p => p.id === blogToDelete.id);
-    if (postIndex > -1) {
-      BLOG_POSTS.splice(postIndex, 1);
-    }
+    try {
+      const response = await fetch(`/api/blogs/${blogToDelete.id}`, {
+        method: 'DELETE',
+      });
 
-    setBlogPosts(blogPosts.filter(p => p.id !== blogToDelete.id));
-    toast({ title: "Success", description: `Blog post "${blogToDelete.title}" deleted.` });
-    closeDeleteDialog();
+      if (!response.ok) {
+        throw new Error('Failed to delete blog post');
+      }
+
+      setBlogPosts(blogPosts.filter(p => p.id !== blogToDelete.id));
+      toast({ title: "Success", description: `Blog post "${blogToDelete.title}" deleted.` });
+    } catch (error) {
+      toast({ title: "Error", description: "Could not delete blog post.", variant: "destructive" });
+    } finally {
+      closeDeleteDialog();
+    }
   };
 
   return (
@@ -67,7 +92,16 @@ export default function BlogsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {blogPosts.map((post) => (
+              {isLoading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                  </TableRow>
+                ))
+              ) : blogPosts.map((post) => (
                 <TableRow key={post.id}>
                   <TableCell className="font-medium">{post.title}</TableCell>
                   <TableCell>{post.author}</TableCell>
