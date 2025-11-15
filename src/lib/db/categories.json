@@ -1,4 +1,3 @@
-
 [
   {
     "id": "backend",
@@ -6,13 +5,13 @@
     "iconName": "Cloud"
   },
   {
-    "id": "ai-ml",
-    "name": "AI/ML",
-    "iconName": "Bot"
-  },
-  {
     "id": "iot-and-cybersecurity",
     "name": "IoT & Cybersecurity",
+    "iconName": "Folder"
+  },
+  {
+    "id": "robotics-and-embedded-systems",
+    "name": "Robotics & Embedded Systems",
     "iconName": "Folder"
   }
 ]

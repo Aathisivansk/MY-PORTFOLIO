@@ -61,8 +61,13 @@ export default function EditProjectPage() {
   const handleFileChange = (setter: (value: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setter(URL.createObjectURL(file));
-      console.log("File selected:", file.name);
+      const reader = new FileReader();
+      reader.onload = (loadEvent) => {
+        if (loadEvent.target && typeof loadEvent.target.result === 'string') {
+          setter(loadEvent.target.result);
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 

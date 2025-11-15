@@ -1,4 +1,3 @@
-
 [
   {
     "id": "proj-1763170621959",
@@ -10,6 +9,19 @@
       "Pentesting"
     ],
     "demo_photo_url": "",
+    "demo_video_url": "",
+    "flowchart_url": ""
+  },
+  {
+    "id": "proj-1763171399009",
+    "title": "Maze solver bot",
+    "description": "",
+    "myContribution": "",
+    "categoryId": "robotics-and-embedded-systems",
+    "techStack": [
+      ""
+    ],
+    "demo_photo_url": "blob:https://9000-firebase-studio-1763143259436.cluster-iktsryn7xnhpexlu6255bftka4.cloudworkstations.dev/e88f34a9-41bc-4bd4-a698-aac084a45e75",
     "demo_video_url": "",
     "flowchart_url": ""
   }
