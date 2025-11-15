@@ -20,7 +20,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     if (isMounted) {
       if (isAuthenticated && pathname === '/admin') {
         router.push('/admin/dashboard');
-      } else if (!isAuthenticated && pathname !== '/admin') {
+      } else if (!isAuthenticated && pathname.startsWith('/admin/dashboard')) {
         router.push('/admin');
       }
     }
@@ -28,6 +28,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   if (!isMounted) {
     return null; // or a loading spinner
+  }
+
+  if (!isAuthenticated && pathname.startsWith('/admin/dashboard')) {
+    return null; // Render nothing while redirecting
+  }
+
+  if (isAuthenticated && pathname === '/admin') {
+      return null; // Render nothing while redirecting
   }
 
   if (!isAuthenticated) {
