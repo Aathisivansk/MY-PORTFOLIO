@@ -19,6 +19,8 @@ export type Project = {
   description: string;
   myContribution: string;
   techStack: string[];
+  githubUrl?: string;
+  socialUrl?: string;
   flowchart_url?: string;
   demo_photo_url?: string;
   demo_video_url?: string;

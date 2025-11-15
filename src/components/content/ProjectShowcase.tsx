@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { Lightbox } from '../ui/lightbox';
 import { Button } from '../ui/button';
-import { Download, File as FileIcon } from 'lucide-react';
+import { Download, File as FileIcon, Github, Link as LinkIcon } from 'lucide-react';
 
 interface ProjectShowcaseProps {
   project: Project;
@@ -96,7 +96,21 @@ export function ProjectShowcase({ project }: ProjectShowcaseProps) {
       {lightboxImage && <Lightbox imageUrl={lightboxImage} onClose={() => setLightboxImage(null)} />}
       <div>
         <h2 className="text-3xl font-bold text-foreground">{project.title}</h2>
-        {project.description && <p className="text-muted-foreground mt-1">{project.description}</p>}
+        <div className="flex items-center gap-4 mt-2">
+            {project.githubUrl && (
+              <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Github className="h-5 w-5" />
+                <span>GitHub Repository</span>
+              </a>
+            )}
+            {project.socialUrl && (
+              <a href={project.socialUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+                <LinkIcon className="h-5 w-5" />
+                <span>Live Demo / More Info</span>
+              </a>
+            )}
+        </div>
+        {project.description && <p className="text-muted-foreground mt-2">{project.description}</p>}
       </div>
 
       {project.myContribution && (

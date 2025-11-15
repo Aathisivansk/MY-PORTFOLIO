@@ -198,6 +198,14 @@ export default function EditProjectPage() {
                 <Label htmlFor="techStack">Tech Stack (comma-separated)</Label>
                 <Input id="techStack" value={project.techStack.join(', ')} onChange={(e) => handleInputChange('techStack', e.target.value.split(',').map(s => s.trim()))} placeholder="e.g., React, Next.js, Tailwind CSS" disabled={isSubmitting} />
               </div>
+              <div className="space-y-2">
+                  <Label htmlFor="githubUrl">GitHub URL</Label>
+                  <Input id="githubUrl" value={project.githubUrl || ''} onChange={(e) => handleInputChange('githubUrl', e.target.value)} placeholder="https://github.com/user/repo" disabled={isSubmitting} />
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="socialUrl">Other Link (e.g., Live Demo, LinkedIn)</Label>
+                  <Input id="socialUrl" value={project.socialUrl || ''} onChange={(e) => handleInputChange('socialUrl', e.target.value)} placeholder="https://example.com" disabled={isSubmitting} />
+              </div>
               
               {renderMediaInput("demoPhoto", "Demo Photo", project.demo_photo_url || '', (val) => handleInputChange('demo_photo_url', val))}
               {renderMediaInput("flowchart", "Flowchart", project.flowchart_url || '', (val) => handleInputChange('flowchart_url', val))}

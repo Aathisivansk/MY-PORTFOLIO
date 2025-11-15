@@ -25,6 +25,8 @@ export default function NewProjectPage() {
   const [myContribution, setMyContribution] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [techStack, setTechStack] = useState('');
+  const [githubUrl, setGithubUrl] = useState('');
+  const [socialUrl, setSocialUrl] = useState('');
   const [demoPhotoUrl, setDemoPhotoUrl] = useState('');
   const [demoVideoUrl, setDemoVideoUrl] = useState('');
   const [flowchartUrl, setFlowchartUrl] = useState('');
@@ -87,6 +89,8 @@ export default function NewProjectPage() {
       myContribution,
       categoryId,
       techStack: techStack.split(',').map(s => s.trim()),
+      githubUrl,
+      socialUrl,
       demo_photo_url: demoPhotoUrl,
       demo_video_url: demoVideoUrl,
       flowchart_url: flowchartUrl,
@@ -174,6 +178,14 @@ export default function NewProjectPage() {
               <div className="space-y-2">
                 <Label htmlFor="techStack">Tech Stack (comma-separated)</Label>
                 <Input id="techStack" value={techStack} onChange={(e) => setTechStack(e.target.value)} placeholder="e.g., React, Next.js, Tailwind CSS" disabled={isSubmitting} />
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="githubUrl">GitHub URL</Label>
+                  <Input id="githubUrl" value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} placeholder="https://github.com/user/repo" disabled={isSubmitting} />
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="socialUrl">Other Link (e.g., Live Demo, LinkedIn)</Label>
+                  <Input id="socialUrl" value={socialUrl} onChange={(e) => setSocialUrl(e.target.value)} placeholder="https://example.com" disabled={isSubmitting} />
               </div>
               
               {renderMediaInput("demoPhoto", "Demo Photo", demoPhotoUrl, setDemoPhotoUrl)}
