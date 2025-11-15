@@ -8,5 +8,10 @@
     "id": "ai-ml",
     "name": "AI/ML",
     "iconName": "Bot"
+  },
+  {
+    "id": "iot&cybersecurity",
+    "name": "IoT&Cybersecurity",
+    "iconName": "Folder"
   }
 ]

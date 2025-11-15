@@ -72,6 +72,11 @@ const DesktopProviderInternal: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [windows]);
 
   const openWindow = useCallback(({ id, title, icon, type, content, size: initialSize }: OpenWindowArgs) => {
+    // Re-fetch categories when a window is opened to catch any updates.
+    if (type === 'CATEGORY') {
+      fetchCategories();
+    }
+    
     setWindows(prevWindows => {
       const existingWindow = prevWindows.find(w => w.id === id);
       if (existingWindow) {
@@ -124,7 +129,7 @@ const DesktopProviderInternal: React.FC<{ children: React.ReactNode }> = ({ chil
       windowCount++;
       return [...prevWindows.map(w => ({ ...w, isFocused: false })), newWindow];
     });
-  }, [getInitialPosition, categories]);
+  }, [getInitialPosition, categories, fetchCategories]);
 
 
   const closeWindow = useCallback((id: string) => {

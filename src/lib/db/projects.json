@@ -1,18 +1,1 @@
-[
-  {
-    "id": "proj-4",
-    "categoryId": "ai-ml",
-    "title": "Image Recognition API",
-    "description": "A deep learning model to classify images with high accuracy.",
-    "myContribution": "Trained a Convolutional Neural Network (CNN) using TensorFlow and Keras on a custom dataset. Developed a REST API with Flask to serve the model predictions. Optimized the model for inference speed.",
-    "techStack": [
-      "Python",
-      "TensorFlow",
-      "Keras",
-      "Flask",
-      "OpenCV"
-    ],
-    "flowchart_url": "https://picsum.photos/seed/104/800/600",
-    "demo_photo_url": "https://picsum.photos/seed/105/800/600"
-  }
-]
+[]
