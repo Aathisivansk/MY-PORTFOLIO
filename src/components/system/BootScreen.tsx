@@ -29,14 +29,14 @@ export const BootScreen: React.FC<BootScreenProps> = ({ onComplete }) => {
     return (
         <div
             className={cn(
-                "fixed inset-0 z-50 flex flex-col items-center justify-center bg-black text-white transition-opacity duration-500 ease-in-out",
+                "fixed inset-0 z-50 flex flex-col items-center justify-center bg-background text-foreground transition-opacity duration-500 ease-in-out",
                 isFading ? "opacity-0 pointer-events-none" : "opacity-100"
             )}
         >
             <div className="flex flex-col items-center space-y-8">
                 {/* Animated User Profile / Logo Placeholder */}
                 <div className="relative h-32 w-32 animate-pulse rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 shadow-[0_0_50px_rgba(59,130,246,0.5)]">
-                    <div className="absolute inset-2 rounded-full bg-black flex items-center justify-center">
+                    <div className="absolute inset-2 rounded-full bg-background flex items-center justify-center">
                         <span className="text-4xl font-bold">AS</span>
                     </div>
                 </div>
@@ -46,7 +46,7 @@ export const BootScreen: React.FC<BootScreenProps> = ({ onComplete }) => {
                     <h1 className="text-4xl font-bold tracking-tighter opacity-0 animate-[fadeIn_1s_ease-out_forwards]">
                         Welcome Back
                     </h1>
-                    <p className="text-gray-400 opacity-0 animate-[fadeIn_1s_ease-out_0.5s_forwards]">
+                    <p className="text-muted-foreground opacity-0 animate-[fadeIn_1s_ease-out_0.5s_forwards]">
                         Liquid Crystal OS v1.0
                     </p>
                 </div>
@@ -56,14 +56,14 @@ export const BootScreen: React.FC<BootScreenProps> = ({ onComplete }) => {
                     onClick={handleStart}
                     disabled={!showButton}
                     className={cn(
-                        "group relative px-8 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full transition-all duration-300 backdrop-blur-sm",
+                        "group relative px-8 py-3 bg-primary/10 hover:bg-primary/20 border border-primary/10 rounded-full transition-all duration-300 backdrop-blur-sm",
                         showButton ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
                     )}
                 >
                     <span className="text-sm font-medium tracking-widest uppercase">
                         Click to Start
                     </span>
-                    <div className="absolute inset-0 rounded-full bg-white/5 blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 rounded-full bg-primary/5 blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
             </div>
 

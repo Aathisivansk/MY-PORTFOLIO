@@ -7,29 +7,37 @@ interface IntroSequenceProps {
     onComplete: () => void;
 }
 
-const GlideText = ({ text, delay = 0, className }: { text: string; delay?: number; className?: string }) => {
-    const [start, setStart] = useState(false);
+const TypewriterText = ({ text, delay = 0, className }: { text: string; delay?: number; className?: string }) => {
+    const [displayedText, setDisplayedText] = useState("");
+    const [started, setStarted] = useState(false);
 
     useEffect(() => {
-        const timer = setTimeout(() => setStart(true), delay);
-        return () => clearTimeout(timer);
+        const startTimer = setTimeout(() => {
+            setStarted(true);
+        }, delay);
+        return () => clearTimeout(startTimer);
     }, [delay]);
 
+    useEffect(() => {
+        if (!started) return;
+
+        let currentIndex = 0;
+        const intervalId = setInterval(() => {
+            if (currentIndex < text.length) {
+                setDisplayedText(text.slice(0, currentIndex + 1));
+                currentIndex++;
+            } else {
+                clearInterval(intervalId);
+            }
+        }, 50); // Typing speed
+
+        return () => clearInterval(intervalId);
+    }, [started, text]);
+
     return (
-        <span
-            className={cn(
-                "inline-block bg-clip-text text-transparent bg-gradient-to-r from-white via-white/80 to-white/20 bg-[size:200%_auto] transition-all duration-1000 ease-linear",
-                start ? "animate-gradient-x opacity-100" : "opacity-0",
-                className
-            )}
-            style={{
-                // Fallback / alternate typing effect: masking
-                backgroundSize: "200% 100%",
-                backgroundPosition: start ? "0% center" : "100% center",
-                transition: `background-position 1.5s ease-out ${delay}ms, opacity 0.5s ease-out ${delay}ms`
-            }}
-        >
-            {text}
+        <span className={cn("inline-block", className)}>
+            {displayedText}
+            <span className={cn("inline-block w-[0.1em] h-[1em] bg-current ml-1 animate-pulse", started && displayedText.length === text.length ? "hidden" : "")} />
         </span>
     );
 };
@@ -95,12 +103,12 @@ export const IntroSequence: React.FC<IntroSequenceProps> = ({ onComplete }) => {
         return () => observer.disconnect();
     }, [onComplete]);
 
-    // Added h-screen and overflow-y-auto to fix the scroll issue
+    // Added h-screen and overflow-y-auto to fix the scroll issue. Removed bg-black/text-white for theme consistency.
     return (
-        <div className="fixed inset-0 z-50 h-screen w-screen overflow-y-auto bg-black text-white selection:bg-white/20 scroll-smooth">
+        <div className="fixed inset-0 z-50 h-screen w-screen overflow-y-auto bg-background text-foreground selection:bg-primary/20 scroll-smooth">
             <IntroSection>
                 <h1 className="text-6xl md:text-9xl font-bold tracking-tighter">
-                    <GlideText text="Hello." delay={200} />
+                    <TypewriterText text="Hello." delay={200} />
                 </h1>
             </IntroSection>
 
@@ -108,15 +116,15 @@ export const IntroSequence: React.FC<IntroSequenceProps> = ({ onComplete }) => {
                 <div className="space-y-4 max-w-xl">
                     <div className="flex flex-col md:flex-row items-center gap-8">
                         {/* Placeholder for Profile Photo */}
-                        <div className="w-48 h-48 rounded-full bg-gradient-to-tr from-gray-700 to-gray-900 border border-white/10 flex-shrink-0 animate-pulse" />
+                        <div className="w-48 h-48 rounded-full bg-gradient-to-tr from-gray-700 to-gray-900 border border-border flex-shrink-0 animate-pulse" />
 
                         <div className="flex flex-col">
-                            {/* GlideText for storytelling */}
+                            {/* TypewriterText for storytelling */}
                             <div className="text-4xl md:text-6xl font-bold tracking-tight">
-                                <GlideText text="I am Aathisivan." delay={200} />
+                                <TypewriterText text="I am Aathisivan." delay={200} />
                             </div>
-                            <p className="text-xl md:text-2xl text-gray-400 mt-4 leading-relaxed">
-                                <GlideText text="I build things for the web." delay={800} className="font-light" />
+                            <p className="text-xl md:text-2xl text-muted-foreground mt-4 leading-relaxed">
+                                <TypewriterText text="I build things for the web." delay={1500} className="font-light" />
                             </p>
                         </div>
                     </div>
@@ -126,20 +134,20 @@ export const IntroSequence: React.FC<IntroSequenceProps> = ({ onComplete }) => {
             <IntroSection>
                 <div className="text-center space-y-6">
                     <div className="text-3xl md:text-5xl font-medium">
-                        <GlideText text="Full Stack Developer." delay={0} />
+                        <TypewriterText text="Full Stack Developer." delay={0} />
                     </div>
                     <div className="text-3xl md:text-5xl font-medium">
-                        <GlideText text="Creative Technologist." delay={300} />
+                        <TypewriterText text="Creative Technologist." delay={1500} />
                     </div>
                     <div className="text-3xl md:text-5xl font-medium">
-                        <GlideText text="Problem Solver." delay={600} />
+                        <TypewriterText text="Problem Solver." delay={3000} />
                     </div>
                 </div>
             </IntroSection>
 
             {/* Trigger for completion */}
             <div ref={footerRef} className="h-32 flex items-center justify-center pb-10">
-                <p className="text-sm text-gray-600 animate-pulse">Initializing System...</p>
+                <p className="text-sm text-muted-foreground animate-pulse">Initializing System...</p>
             </div>
         </div>
     );
