@@ -33,7 +33,7 @@ export default function Home() {
   if (isLoading) return null;
 
   return (
-    <div className="h-full w-full bg-black">
+    <div className="h-full w-full bg-transparent">
       {/* Intro Sequence */}
       {bootStep === "intro" && (
         <IntroSequence onComplete={handleIntroComplete} />
