@@ -7,6 +7,33 @@ interface IntroSequenceProps {
     onComplete: () => void;
 }
 
+const GlideText = ({ text, delay = 0, className }: { text: string; delay?: number; className?: string }) => {
+    const [start, setStart] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setStart(true), delay);
+        return () => clearTimeout(timer);
+    }, [delay]);
+
+    return (
+        <span
+            className={cn(
+                "inline-block bg-clip-text text-transparent bg-gradient-to-r from-white via-white/80 to-white/20 bg-[size:200%_auto] transition-all duration-1000 ease-linear",
+                start ? "animate-gradient-x opacity-100" : "opacity-0",
+                className
+            )}
+            style={{
+                // Fallback / alternate typing effect: masking
+                backgroundSize: "200% 100%",
+                backgroundPosition: start ? "0% center" : "100% center",
+                transition: `background-position 1.5s ease-out ${delay}ms, opacity 0.5s ease-out ${delay}ms`
+            }}
+        >
+            {text}
+        </span>
+    );
+};
+
 const IntroSection = ({
     children,
     className,
@@ -24,7 +51,7 @@ const IntroSection = ({
                     setIsVisible(true);
                 }
             },
-            { threshold: 0.5 }
+            { threshold: 0.4 } // Lower threshold for better trigger on mobile
         );
 
         if (ref.current) {
@@ -55,11 +82,10 @@ export const IntroSequence: React.FC<IntroSequenceProps> = ({ onComplete }) => {
         const observer = new IntersectionObserver(
             ([entry]) => {
                 if (entry.isIntersecting) {
-                    // Reached the bottom
-                    setTimeout(onComplete, 500);
+                    setTimeout(onComplete, 1000); // Give user a moment to see the bottom
                 }
             },
-            { threshold: 1.0 }
+            { threshold: 0.5 }
         );
 
         if (footerRef.current) {
@@ -69,11 +95,12 @@ export const IntroSequence: React.FC<IntroSequenceProps> = ({ onComplete }) => {
         return () => observer.disconnect();
     }, [onComplete]);
 
+    // Added h-screen and overflow-y-auto to fix the scroll issue
     return (
-        <div className="bg-black text-white selection:bg-white/20">
+        <div className="fixed inset-0 z-50 h-screen w-screen overflow-y-auto bg-black text-white selection:bg-white/20 scroll-smooth">
             <IntroSection>
-                <h1 className="text-6xl md:text-8xl font-bold tracking-tighter">
-                    Hello.
+                <h1 className="text-6xl md:text-9xl font-bold tracking-tighter">
+                    <GlideText text="Hello." delay={200} />
                 </h1>
             </IntroSection>
 
@@ -81,14 +108,15 @@ export const IntroSequence: React.FC<IntroSequenceProps> = ({ onComplete }) => {
                 <div className="space-y-4 max-w-xl">
                     <div className="flex flex-col md:flex-row items-center gap-8">
                         {/* Placeholder for Profile Photo */}
-                        <div className="w-48 h-48 rounded-full bg-gradient-to-tr from-gray-700 to-gray-900 border border-white/10 flex-shrink-0" />
+                        <div className="w-48 h-48 rounded-full bg-gradient-to-tr from-gray-700 to-gray-900 border border-white/10 flex-shrink-0 animate-pulse" />
 
-                        <div>
-                            <h2 className="text-4xl md:text-6xl font-bold tracking-tight">
-                                I am Aathisivan.
-                            </h2>
+                        <div className="flex flex-col">
+                            {/* GlideText for storytelling */}
+                            <div className="text-4xl md:text-6xl font-bold tracking-tight">
+                                <GlideText text="I am Aathisivan." delay={200} />
+                            </div>
                             <p className="text-xl md:text-2xl text-gray-400 mt-4 leading-relaxed">
-                                I build things for the web.
+                                <GlideText text="I build things for the web." delay={800} className="font-light" />
                             </p>
                         </div>
                     </div>
@@ -97,20 +125,20 @@ export const IntroSequence: React.FC<IntroSequenceProps> = ({ onComplete }) => {
 
             <IntroSection>
                 <div className="text-center space-y-6">
-                    <h3 className="text-3xl md:text-5xl font-medium text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">
-                        Full Stack Developer.
-                    </h3>
-                    <h3 className="text-3xl md:text-5xl font-medium text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50 delay-100">
-                        Creative Technologist.
-                    </h3>
-                    <h3 className="text-3xl md:text-5xl font-medium text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50 delay-200">
-                        Problem Solver.
-                    </h3>
+                    <div className="text-3xl md:text-5xl font-medium">
+                        <GlideText text="Full Stack Developer." delay={0} />
+                    </div>
+                    <div className="text-3xl md:text-5xl font-medium">
+                        <GlideText text="Creative Technologist." delay={300} />
+                    </div>
+                    <div className="text-3xl md:text-5xl font-medium">
+                        <GlideText text="Problem Solver." delay={600} />
+                    </div>
                 </div>
             </IntroSection>
 
             {/* Trigger for completion */}
-            <div ref={footerRef} className="h-32 flex items-center justify-center">
+            <div ref={footerRef} className="h-32 flex items-center justify-center pb-10">
                 <p className="text-sm text-gray-600 animate-pulse">Initializing System...</p>
             </div>
         </div>
