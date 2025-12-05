@@ -4,33 +4,50 @@ import { useState, useEffect } from "react";
 import { Desktop } from "@/components/system/Desktop";
 import { Taskbar } from "@/components/system/Taskbar";
 import { BootScreen } from "@/components/system/BootScreen";
+import { IntroSequence } from "@/components/system/IntroSequence";
 import { cn } from "@/lib/utils";
 
 export default function Home() {
-  const [hasBooted, setHasBooted] = useState(false);
+  const [bootStep, setBootStep] = useState<"intro" | "boot" | "desktop">("intro");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const booted = sessionStorage.getItem("hasBooted");
-    if (booted) {
-      setHasBooted(true);
+    const hasBooted = sessionStorage.getItem("hasBooted");
+    if (hasBooted) {
+      setBootStep("desktop");
     }
     setIsLoading(false);
   }, []);
 
+  const handleIntroComplete = () => {
+    setBootStep("boot");
+    // Optional: scroll to top if needed, though unmounting handles it
+    window.scrollTo(0, 0);
+  };
+
   const handleBootComplete = () => {
-    setHasBooted(true);
+    setBootStep("desktop");
     sessionStorage.setItem("hasBooted", "true");
   };
 
-  if (isLoading) return null; // Or a simple loader to prevent flash
+  if (isLoading) return null;
 
   return (
-    <div className="h-full w-full">
-      {!hasBooted && <BootScreen onComplete={handleBootComplete} />}
+    <div className="h-full w-full bg-black">
+      {/* Intro Sequence */}
+      {bootStep === "intro" && (
+        <IntroSequence onComplete={handleIntroComplete} />
+      )}
+
+      {/* Boot Screen */}
+      {bootStep === "boot" && (
+        <BootScreen onComplete={handleBootComplete} />
+      )}
+
+      {/* Desktop Environment */}
       <div className={cn(
         "h-full w-full transition-opacity duration-1000",
-        hasBooted ? "opacity-100" : "opacity-0"
+        bootStep === "desktop" ? "opacity-100" : "opacity-0 hidden"
       )}>
         <Desktop />
         <Taskbar />
